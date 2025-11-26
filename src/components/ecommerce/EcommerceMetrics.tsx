@@ -67,7 +67,7 @@ export const EcommerceMetrics = () => {
   }, []);
 
   const computedPortfolioValue =
-    (balance || 0) + (profit || 0) + (totalShares || 0) * sharePrice;
+    10 + (balance || 0) + (profit || 0) + (totalShares || 0) * sharePrice;
   const sharesValue = (totalShares || 0) * sharePrice;
 
   const cards = [

@@ -19,8 +19,7 @@ import {
   Banknote,
   BarChart3,
   Gift,
-  Users,
-  HelpCircle,
+  Users, 
   Settings,
 } from "lucide-react";
 

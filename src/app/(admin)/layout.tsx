@@ -5,25 +5,22 @@ import AppHeader from "@/layout/AppHeader";
 import AppSidebar from "@/layout/AppSidebar";
 import Backdrop from "@/layout/Backdrop";
 import { getUser } from "@/lib/appwrite/auth";
-import { useRouter } from "next/navigation";
+import {
+  databases,
+  DB_ID,
+  PROFILE_COLLECTION_ID,
+} from "@/lib/appwrite/client";
+import { Query } from "appwrite";
+import { useRouter, usePathname } from "next/navigation";
 import React, { useEffect, useState } from "react";
 
-// Extend the Window interface to include jivo_onLoad and jivo_api
-declare global {
-  interface Window {
-    jivo_onLoad?: () => void;
-    jivo_api?: {
-      setVisitorInfo?: (info: {
-        name: string;
-        email: string;
-        custom_fields: {
-          appwriteUserId: string;
-        };
-      }) => void;
-      // Add other jivo_api methods if needed
-    };
-  }
-}
+type SessionType = Awaited<ReturnType<typeof getUser>>;
+type ProfileTypeSus = {
+  $id: string;
+  userId: string;
+  suspended?: boolean; // <- your boolean flag
+  // ...any other fields
+};
 
 export default function AdminLayout({
   children,
@@ -32,6 +29,7 @@ export default function AdminLayout({
 }) {
   const { isExpanded, isHovered, isMobileOpen } = useSidebar();
   const router = useRouter();
+  const pathname = usePathname();
 
   const mainContentMargin = isMobileOpen
     ? "ml-0"
@@ -39,46 +37,71 @@ export default function AdminLayout({
       ? "lg:ml-[290px]"
       : "lg:ml-[90px]";
 
-  const [sessionInfo, setSessionInfo] = useState<null | Awaited<ReturnType<typeof getUser>>>(null);
+  const [sessionInfo, setSessionInfo] = useState<SessionType | null>(null);
+  const [profile, setProfile] = useState<ProfileTypeSus | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Fetch session + profile
   useEffect(() => {
-    const fetchSession = async () => {
+    const fetchSessionAndProfile = async () => {
       setLoading(true);
-      const data = await getUser();
-      setSessionInfo(data);
-      setLoading(false);
-    };
-    fetchSession();
-  }, []);
+      try {
+        const user = await getUser();
 
-  // Redirect if no session
-  useEffect(() => {
-    if (!loading && !sessionInfo) {
-      router.replace("/signin");
-    }
-  }, [loading, sessionInfo, router]);
+        if (!user) {
+          setSessionInfo(null);
+          setProfile(null);
+          return;
+        }
 
-  // Setup JivoChat visitor info after user and script are ready
-  useEffect(() => {
-    if (!sessionInfo) return;
+        setSessionInfo(user);
 
-    // Define the callback for JivoChat API ready event
-    (window).jivo_onLoad = function () {
-      if ((window).jivo_api && typeof (window).jivo_api.setVisitorInfo === "function") {
-        (window).jivo_api.setVisitorInfo({
-          name: sessionInfo.name,
-          email: sessionInfo.email,
-          custom_fields: {
-            appwriteUserId: sessionInfo.$id,
-          },
-        });
+        const res = await databases.listDocuments(
+          DB_ID,
+          PROFILE_COLLECTION_ID,
+          [Query.equal("userId", user.$id)]
+        );
+
+        if (res.total > 0) {
+          setProfile(res.documents[0] as unknown as ProfileTypeSus);
+        } else {
+          setProfile(null);
+        }
+      } catch (err) {
+        console.error("Error fetching session/profile:", err);
+        setSessionInfo(null);
+        setProfile(null);
+      } finally {
+        setLoading(false);
       }
     };
-  }, [sessionInfo]);
 
-  if (loading || !sessionInfo) {
-    return null; // or loading spinner
+    fetchSessionAndProfile();
+  }, []);
+
+  // Redirect logic
+  useEffect(() => {
+    if (loading) return;
+
+    // No session → sign in
+    if (!sessionInfo) {
+      router.replace("/signin");
+      return;
+    }
+
+    // Session exists but profile is suspended → suspended page
+    if (pathname !== "/suspended" && profile?.suspended === true) {
+      router.replace("/suspended");
+    }
+  }, [loading, sessionInfo, profile, pathname, router]);
+
+  // Avoid flashing content while deciding / redirecting
+  if (
+    loading ||
+    !sessionInfo ||
+    (profile?.suspended === true && pathname !== "/suspended")
+  ) {
+    return null; // or a spinner skeleton
   }
 
   return (
@@ -89,7 +112,9 @@ export default function AdminLayout({
         className={`flex-1 transition-all duration-300 ease-in-out ${mainContentMargin}`}
       >
         <AppHeader />
-        <div className="p-4 mx-auto max-w-(--breakpoint-2xl) md:p-6">{children}</div>
+        <div className="p-4 mx-auto max-w-(--breakpoint-2xl) md:p-6">
+          {children}
+        </div>
       </div>
     </div>
   );

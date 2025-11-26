@@ -18,7 +18,7 @@ type SessionType = Awaited<ReturnType<typeof getUser>>;
 type ProfileTypeSus = {
   $id: string;
   userId: string;
-  suspended?: boolean; // <- your boolean flag
+  suspended?: string; // <- your boolean flag
   // ...any other fields
 };
 
@@ -90,7 +90,7 @@ export default function AdminLayout({
     }
 
     // Session exists but profile is suspended → suspended page
-    if (pathname !== "/suspended" && profile?.suspended === true) {
+    if (pathname !== "/suspended" && profile?.suspended === 'true') {
       router.replace("/suspended");
     }
   }, [loading, sessionInfo, profile, pathname, router]);
@@ -99,7 +99,7 @@ export default function AdminLayout({
   if (
     loading ||
     !sessionInfo ||
-    (profile?.suspended === true && pathname !== "/suspended")
+    (profile?.suspended === 'true' && pathname !== "/suspended")
   ) {
     return null; // or a spinner skeleton
   }

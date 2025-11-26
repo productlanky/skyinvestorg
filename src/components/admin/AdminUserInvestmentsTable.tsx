@@ -58,12 +58,9 @@ export default function AdminUserInvestmentsTable({ userId }: Props) {
                 );
 
                 // 3️⃣ Format data
-                const formatted = investments.map((inv) => {
-                    const today = new Date();
-                    const endDate = inv.end_date ? new Date(inv.end_date) : null;
-
+                const formatted = investments.map((inv) => { 
                     // If end date is set and it's today or earlier, mark as completed
-                    let computedStatus = inv.status;
+                    const computedStatus = inv.status;
                     // if (endDate && endDate <= today) {
                     //     computedStatus = "completed";
                     // } else if (!endDate || endDate > today) {

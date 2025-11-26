@@ -23,6 +23,7 @@ interface UserRow {
     gender: string;
     country: string;
     phone: string;
+    suspended?: string;
     // balance: number;
     created_at: string;
 }
@@ -53,6 +54,7 @@ export default function UsersTable() {
                         gender: u.gender ?? "—",
                         country: u.country ?? "—",
                         phone: u.phone ?? "—",
+                        suspended: u.suspended,
                         // balance: parseFloat(u.balance) || 0,
                         created_at: u.$createdAt
                     }));
@@ -165,9 +167,9 @@ export default function UsersTable() {
                                         <TableCell className="px-4 py-3 text-start">
                                             <Badge
                                                 size="sm"
-                                                color="success"
+                                                color={user.suspended === 'true' ? 'error' : 'success'}
                                             >
-                                                Active
+                                              {user.suspended === 'true' ? 'Suspended' : 'Active'}
                                             </Badge>
                                         </TableCell>
                                     </TableRow>

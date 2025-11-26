@@ -107,23 +107,7 @@ export default function AdminUserProfileCard({ id }: { id: string }) {
   const [frontImageUrl, setFrontImageUrl] = useState<string | null>(null);
   const [backImageUrl, setBackImageUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [sharePrice, setSharePrice] = useState(0);
-
-  useEffect(() => {
-    const init = async () => {
-      try {
-        const priceStr = await fetchTeslaPrice();
-        const price = parseFloat(priceStr);
-        setSharePrice(price);
-        await fetchUser(price);
-      } catch (error) {
-        console.error("Error initializing profile:", error);
-        setLoading(false);
-      }
-    };
-
-    init();
-  }, [id]);
+  // const [sharePrice, setSharePrice] = useState(0);
 
   const fetchUser = async (teslaPrice: number) => {
     setLoading(true);
@@ -149,7 +133,7 @@ export default function AdminUserProfileCard({ id }: { id: string }) {
 
       const totalShare =
         ress.documents.reduce(
-          (sum: number, tx: any) => sum + (tx.shares || 0),
+          (sum, tx) => sum + (tx.shares || 0),
           0
         ) || 0;
 
@@ -189,6 +173,23 @@ export default function AdminUserProfileCard({ id }: { id: string }) {
     }
   };
 
+  useEffect(() => {
+    const init = async () => {
+      try {
+        const priceStr = await fetchTeslaPrice();
+        const price = parseFloat(priceStr);
+        await fetchUser(price);
+      } catch (error) {
+        console.error("Error initializing profile:", error);
+        setLoading(false);
+      }
+    };
+
+    init();
+  }, [id]);
+
+
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type } = e.target;
     const key = name as keyof ProfileType;
@@ -201,7 +202,7 @@ export default function AdminUserProfileCard({ id }: { id: string }) {
     const newValue =
       type === "number" ? (value === "" ? "" : Number(value)) : value;
 
-    setForm((prev) => ({ ...prev, [key]: newValue as any }));
+    setForm((prev) => ({ ...prev, [key]: newValue }));
   };
 
   const handleSave = async (e: React.FormEvent) => {

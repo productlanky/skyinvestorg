@@ -192,7 +192,7 @@ export default function BuySharesPage() {
                             Live TSLA market · Fractional shares
                         </div>
                         <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-foreground tracking-tight">
-                            Buy Tesla shares
+                            Buy Flash Profits shares
                         </h1>
                         <p className="text-sm sm:text-[13px] text-muted-foreground max-w-xl">
                             Build your position in a few clicks. Enter shares or dollar amount,

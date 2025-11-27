@@ -19,7 +19,7 @@ import {
   Banknote,
   BarChart3,
   Gift,
-  Users, 
+  Users,
   Settings,
 } from "lucide-react";
 
@@ -234,20 +234,13 @@ const AppHeader: React.FC = () => {
 
             {/* Mobile logo */}
             <Link href="/" className="lg:hidden">
-              <Image
-                width={154}
-                height={32}
-                className="dark:hidden"
-                src="/images/logo/logo.svg"
-                alt="Logo"
-              />
-              <Image
-                width={154}
-                height={32}
-                className="hidden dark:block"
-                src="/images/logo/logo-dark.svg"
-                alt="Logo"
-              />
+              <div className="flex items-center gap-2 logo">
+                <div className="logo-badge shrink-0">⚡</div>
+                <div className="logo-text">
+                  <span className="logo-text-main">Flash Profits</span>
+                  <span className="logo-text-sub text-[10px]!">Automated investing</span>
+                </div>
+              </div>
             </Link>
 
             {/* Search / Command trigger (desktop) */}
@@ -288,9 +281,8 @@ const AppHeader: React.FC = () => {
 
           {/* Right side (actions) */}
           <div
-            className={`${
-              isApplicationMenuOpen ? "flex" : "hidden"
-            } w-full items-center justify-between gap-3 px-5 py-3 shadow-theme-md xl:flex xl:w-auto xl:justify-end xl:px-0 xl:py-0 xl:shadow-none`}
+            className={`${isApplicationMenuOpen ? "flex" : "hidden"
+              } w-full items-center justify-between gap-3 px-5 py-3 shadow-theme-md xl:flex xl:w-auto xl:justify-end xl:px-0 xl:py-0 xl:shadow-none`}
           >
             <div className="flex items-center gap-2 2xsm:gap-3">
               {/* Quick actions */}

@@ -1,54 +1,90 @@
 import Link from 'next/link';
+import { Terminal, ArrowRight, ShieldAlert, Cpu } from 'lucide-react';
 
 export default function ForexCTA() {
   return (
-    <section className="py-16 bg-gray-900">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-blue-600 to-indigo-600 shadow-2xl">
+    <section className="py-32 bg-[#020305] relative overflow-hidden">
+      
+      {/* Abstract Grid & Depth */}
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:3rem_3rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] pointer-events-none"></div>
+      
+      {/* Core Glow */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[300px] bg-brand-600/20 rounded-[100%] blur-[120px] pointer-events-none mix-blend-screen"></div>
+
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        
+        {/* The Initialization Console */}
+        <div className="relative group">
+          {/* Animated Border Glow */}
+          <div className="absolute -inset-[1px] bg-gradient-to-r from-brand-500/0 via-brand-500 to-brand-500/0 opacity-30 group-hover:opacity-100 transition-opacity duration-1000"
+               style={{ clipPath: 'polygon(30px 0, 100% 0, 100% calc(100% - 30px), calc(100% - 30px) 100%, 0 100%, 0 30px)' }}></div>
           
-          {/* Background Patterns */}
-          <div className="absolute inset-0 opacity-20 pointer-events-none">
-            <svg className="absolute bottom-0 left-0 transform translate-y-1/2 -translate-x-1/2" width="800" height="800" fill="none" viewBox="0 0 400 400">
-              <defs>
-                <pattern id="cta-dots-1" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
-                  <rect x="0" y="0" width="4" height="4" fill="currentColor"></rect>
-                </pattern>
-              </defs>
-              <rect width="800" height="800" fill="url(#cta-dots-1)"></rect>
-            </svg>
-            <svg className="absolute top-0 right-0 transform -translate-y-1/2 translate-x-1/2" width="800" height="800" fill="none" viewBox="0 0 400 400">
-              <defs>
-                <pattern id="cta-dots-2" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
-                  <rect x="0" y="0" width="4" height="4" fill="currentColor"></rect>
-                </pattern>
-              </defs>
-              <rect width="800" height="800" fill="url(#cta-dots-2)"></rect>
-            </svg>
-          </div>
-
-          {/* Content */}
-          <div className="relative px-6 py-12 sm:py-16 sm:px-12 lg:px-16 flex flex-col md:flex-row items-center">
-            <div className="md:w-2/3 text-center md:text-left mb-8 md:mb-0">
-              <span className="text-sm font-semibold text-blue-200 uppercase tracking-wider mb-2 block">Ready to trade?</span>
-              <h2 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl mb-4">
-                Start Your Forex Trading Journey
-              </h2>
-              <p className="text-lg text-blue-100 max-w-2xl">
-                Join thousands of traders worldwide who trust our platform for their forex trading needs. Get started with a free demo account or open a real trading account today.
-              </p>
-            </div>
+          <div className="relative bg-[#0D1117]/90 backdrop-blur-2xl p-8 md:p-16 flex flex-col items-center text-center shadow-2xl"
+               style={{ clipPath: 'polygon(30px 0, 100% 0, 100% calc(100% - 30px), calc(100% - 30px) 100%, 0 100%, 0 30px)' }}>
             
-            <div className="md:w-1/3 flex flex-col sm:flex-row md:flex-col lg:flex-row gap-4 justify-center md:justify-end w-full">
-              <Link href="/register" className="inline-flex justify-center items-center px-8 py-4 border border-transparent text-base font-bold rounded-lg text-indigo-600 bg-white hover:bg-gray-100 shadow-lg transition-colors whitespace-nowrap">
-                Create Account
-              </Link>
-              <Link href="/about" className="inline-flex justify-center items-center px-8 py-4 border-2 border-white/30 text-base font-bold rounded-lg text-white bg-indigo-800/40 hover:bg-indigo-800/60 shadow-lg transition-colors whitespace-nowrap">
-                Learn More
-              </Link>
+            {/* Top HUD Bar */}
+            <div className="absolute top-0 left-0 w-full flex justify-between px-8 py-3 border-b border-white/5 bg-white/[0.01]">
+              <div className="flex items-center space-x-2">
+                <Cpu className="w-3 h-3 text-brand-500" />
+                <span className="text-[9px] font-mono text-gray-500 uppercase tracking-[0.3em]">Module_FX_Finalize</span>
+              </div>
+              <div className="flex space-x-1">
+                <div className="w-4 h-1 bg-brand-500/30"></div>
+                <div className="w-4 h-1 bg-brand-500/60"></div>
+                <div className="w-4 h-1 bg-brand-500"></div>
+              </div>
+            </div>
+
+            {/* Content Area */}
+            <div className="mt-8 relative w-full max-w-3xl">
+              
+              <div className="inline-flex items-center space-x-3 mb-6 px-4 py-2 border border-brand-500/30 bg-brand-500/10">
+                <Terminal className="w-4 h-4 text-brand-400" />
+                <span className="text-[10px] font-mono font-bold text-brand-400 uppercase tracking-[0.3em] animate-pulse">Awaiting Deployment</span>
+              </div>
+              
+              <h2 className="text-4xl md:text-6xl font-black text-white tracking-tighter uppercase leading-[0.95] mb-6">
+                Deploy Sovereign <br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-400 to-indigo-400 italic">Capital.</span>
+              </h2>
+              
+              <p className="text-lg md:text-xl text-gray-400 font-light max-w-2xl mx-auto mb-10 leading-relaxed">
+                Connect directly to the world&apos;s deepest liquidity pools. Initialize a secure trading environment and execute with institutional precision.
+              </p>
+
+              {/* Action Buttons Matrix */}
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
+                <Link 
+                  href="/register" 
+                  className="group relative flex items-center justify-center h-16 px-10 bg-brand-600 w-full sm:w-auto overflow-hidden hover:bg-brand-500 transition-colors shadow-[0_0_40px_rgba(31,149,201,0.3)]"
+                  style={{ clipPath: 'polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px)' }}
+                >
+                  <span className="relative z-10 text-sm font-black text-white uppercase tracking-widest flex items-center">
+                    Initialize Live Account <ArrowRight className="ml-3 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  </span>
+                </Link>
+                
+                <Link 
+                  href="/about" 
+                  className="group flex items-center justify-center h-16 px-10 bg-white/[0.02] border border-white/10 hover:border-white/30 w-full sm:w-auto transition-colors"
+                  style={{ clipPath: 'polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px)' }}
+                >
+                  <span className="text-sm font-bold text-gray-300 group-hover:text-white uppercase tracking-widest transition-colors">
+                    View Documentation
+                  </span>
+                </Link>
+              </div>
+
+              {/* Security Warning Footer */}
+              <div className="mt-12 flex items-center justify-center space-x-2 text-[9px] font-mono text-gray-600 uppercase tracking-widest">
+                <ShieldAlert className="w-3 h-3 text-warning-500" />
+                <span>Encrypted Connection // Level-3 Verification Required for Withdrawal</span>
+              </div>
+
             </div>
           </div>
-
         </div>
+
       </div>
     </section>
   );

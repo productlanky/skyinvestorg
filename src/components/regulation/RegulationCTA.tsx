@@ -1,42 +1,71 @@
 import Link from 'next/link';
-import { UserPlus, ArrowRight } from 'lucide-react';
+import { Terminal, ArrowRight, ShieldCheck, Scale } from 'lucide-react';
 
 export default function RegulationCTA() {
   return (
-    <section className="py-16 bg-gray-900 relative">
-      {/* Background Gradients & SVG Wave */}
-      <div className="absolute inset-0 bg-gradient-to-r from-blue-900 to-gray-900 opacity-50 pointer-events-none"></div>
-      <div className="absolute bottom-0 left-0 right-0 pointer-events-none">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320">
-          <path fill="#111827" fillOpacity="1" d="M0,224L40,213.3C80,203,160,181,240,181.3C320,181,400,203,480,218.7C560,235,640,245,720,229.3C800,213,880,171,960,165.3C1040,160,1120,192,1200,192C1280,192,1360,160,1400,144L1440,128L1440,320L1400,320C1360,320,1280,320,1200,320C1120,320,1040,320,960,320C880,320,800,320,720,320C640,320,560,320,480,320C400,320,320,320,240,320C160,320,80,320,40,320L0,320Z"></path>
-        </svg>
-      </div>
+    <section className="py-32 bg-[#020305] relative overflow-hidden">
+      
+      {/* Abstract Grid & Depth */}
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:3rem_3rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] pointer-events-none"></div>
+      
+      {/* Core Glow */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[300px] bg-amber-600/10 rounded-[100%] blur-[120px] pointer-events-none mix-blend-screen"></div>
 
-      <div className="container mx-auto px-4 relative z-10 max-w-7xl sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto bg-gray-800/80 backdrop-filter backdrop-blur-sm rounded-2xl p-8 md:p-12 border border-gray-700 shadow-2xl">
-          <div className="text-center">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        
+        {/* The Deployment Console */}
+        <div className="relative group">
+          <div className="absolute -inset-[1px] bg-gradient-to-r from-amber-500/0 via-amber-500 to-amber-500/0 opacity-30 group-hover:opacity-100 transition-opacity duration-1000"
+               style={{ clipPath: 'polygon(30px 0, 100% 0, 100% calc(100% - 30px), calc(100% - 30px) 100%, 0 100%, 0 30px)' }}></div>
+          
+          <div className="relative bg-[#0D1117]/90 backdrop-blur-2xl p-8 md:p-16 flex flex-col items-center text-center shadow-2xl"
+               style={{ clipPath: 'polygon(30px 0, 100% 0, 100% calc(100% - 30px), calc(100% - 30px) 100%, 0 100%, 0 30px)' }}>
             
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-              Trade with Confidence
-            </h2>
-            <p className="text-gray-300 mb-10 max-w-2xl mx-auto text-lg">
-              Start trading with a regulated broker that prioritizes your security, transparency, and ultimate success.
-            </p>
-            
-            <div className="flex flex-col sm:flex-row justify-center gap-4">
-              <Link href="/register" className="px-8 py-4 bg-gradient-to-r from-blue-600 to-emerald-500 text-white font-bold rounded-lg transition duration-300 shadow-lg hover:shadow-blue-500/30 flex items-center justify-center transform hover:-translate-y-1">
-                <span>Open Account</span>
-                <UserPlus className="w-5 h-5 ml-2" />
-              </Link>
-              
-              <Link href="/about" className="px-8 py-4 bg-gray-700 hover:bg-gray-600 text-white font-bold rounded-lg transition duration-300 flex items-center justify-center border border-gray-600 hover:border-gray-500">
-                <span>Learn More</span>
-                <ArrowRight className="w-5 h-5 ml-2" />
-              </Link>
+            {/* Top HUD Bar */}
+            <div className="absolute top-0 left-0 w-full flex justify-between px-8 py-3 border-b border-white/5 bg-white/[0.01]">
+              <div className="flex items-center space-x-2">
+                <Scale className="w-3 h-3 text-amber-500" />
+                <span className="text-[9px] font-mono text-gray-500 uppercase tracking-[0.3em]">Module_KYC_Initialize</span>
+              </div>
             </div>
-            
+
+            <div className="mt-8 relative w-full max-w-3xl">
+              
+              <div className="inline-flex items-center space-x-3 mb-6 px-4 py-2 border border-amber-500/30 bg-amber-500/10">
+                <Terminal className="w-4 h-4 text-amber-400" />
+                <span className="text-[10px] font-mono font-bold text-amber-400 uppercase tracking-[0.3em] animate-pulse">Verification Protocol Ready</span>
+              </div>
+              
+              <h2 className="text-4xl md:text-6xl font-black text-white tracking-tighter uppercase leading-[0.95] mb-6">
+                Establish <br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-yellow-600 italic">Sovereign Identity.</span>
+              </h2>
+              
+              <p className="text-lg md:text-xl text-gray-400 font-light max-w-2xl mx-auto mb-10 leading-relaxed">
+                To comply with international Anti-Money Laundering (AML) directives, all users must complete Level-1 verification to activate live execution routing.
+              </p>
+
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
+                <Link 
+                  href="/register" 
+                  className="group relative flex items-center justify-center h-16 px-10 bg-amber-600 text-[#05070a] w-full sm:w-auto overflow-hidden hover:bg-amber-500 transition-colors shadow-[0_0_40px_rgba(245,158,11,0.2)]"
+                  style={{ clipPath: 'polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px)' }}
+                >
+                  <span className="relative z-10 text-sm font-black uppercase tracking-widest flex items-center">
+                    Initiate KYC Scan <ArrowRight className="ml-3 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  </span>
+                </Link>
+              </div>
+
+              <div className="mt-12 flex items-center justify-center space-x-2 text-[9px] font-mono text-gray-600 uppercase tracking-widest">
+                <ShieldCheck className="w-3 h-3 text-success-500" />
+                <span>Identity data is encrypted and vaulted off-server</span>
+              </div>
+
+            </div>
           </div>
         </div>
+
       </div>
     </section>
   );

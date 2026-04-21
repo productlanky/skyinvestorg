@@ -1,123 +1,116 @@
 import Link from 'next/link';
-import { Home, ChevronRight } from 'lucide-react';
+import { Terminal, ChevronRight, Activity, Code, Zap } from 'lucide-react';
 
 export default function AutomateHero() {
   return (
-    <section className="relative overflow-hidden bg-gradient-to-br from-gray-900 to-gray-800">
-      {/* Background Elements */}
-      <div className="absolute inset-0 z-20 md:z-0 pointer-events-none">
-        <div className="absolute top-0 left-0 w-full h-full opacity-60 md:opacity-20">
-          <svg className="absolute top-0 left-0 w-full h-full" viewBox="0 0 800 800">
-            <defs>
-              <linearGradient id="autoGrad1" x1="50%" x2="50%" y1="0%" y2="100%">
-                <stop stopColor="#3B82F6" stopOpacity=".25" offset="0%"></stop>
-                <stop stopColor="#10B981" stopOpacity=".2" offset="100%"></stop>
-              </linearGradient>
-            </defs>
-            <path fill="url(#autoGrad1)" d="M400,115 C515.46,115 615,214.54 615,330 C615,445.46 515.46,545 400,545 C284.54,545 185,445.46 185,330 C185,214.54 284.54,115 400,115 Z" transform="translate(0 -50)"></path>
-            <path fill="url(#autoGrad1)" d="M400,115 C515.46,115 615,214.54 615,330 C615,445.46 515.46,545 400,545 C284.54,545 185,445.46 185,330 C185,214.54 284.54,115 400,115 Z" transform="translate(350 150)"></path>
-          </svg>
-        </div>
+    <section className="relative w-full min-h-[85vh] bg-[#020305] overflow-hidden flex items-center pt-24 pb-16">
+      
+      {/* BRAND BACKGROUND & TEXTURES */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-brand-600/10 rounded-full blur-[150px] mix-blend-screen"></div>
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-brand-400/10 rounded-full blur-[150px] mix-blend-screen"></div>
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:3rem_3rem] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_50%,#000_70%,transparent_100%)]"></div>
       </div>
 
-      {/* Hero Content */}
-      <div className="relative z-10 px-4 py-16 mx-auto max-w-7xl sm:px-6 lg:px-8">
-        <div className="flex flex-col-reverse items-center gap-8 md:flex-row">
+      <div className="max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
           
-          {/* Left Column - Text Content */}
-          <div className="w-full md:w-1/2 space-y-6">
-            <div className="inline-block px-3 py-1 mb-2 text-xs font-semibold tracking-wider text-blue-400 uppercase bg-blue-900/30 rounded-full border border-blue-800/50">
-              Advanced Trading Platform
+          {/* LEFT: COPY & MODULES (7 Columns) */}
+          <div className="lg:col-span-7 space-y-10 relative">
+            
+            {/* System Path */}
+            <nav className="inline-flex items-center space-x-2 px-4 py-2 rounded-lg bg-white/[0.02] border border-white/5 backdrop-blur-md">
+              <Terminal className="w-4 h-4 text-brand-500" />
+              <div className="flex items-center text-[10px] font-mono text-gray-500 uppercase tracking-widest">
+                <Link href="/" className="hover:text-brand-400 transition-colors">SYS_ROOT</Link>
+                <ChevronRight className="w-3 h-3 mx-1 opacity-50" />
+                <span className="opacity-70">Technology</span>
+                <ChevronRight className="w-3 h-3 mx-1 opacity-50" />
+                <span className="text-brand-400 font-bold shadow-brand-500">Algorithmic_Engine</span>
+              </div>
+            </nav>
+
+            {/* Massive Typography */}
+            <div className="relative">
+              <h1 className="absolute -top-10 -left-4 text-[5rem] md:text-[9rem] font-black text-transparent opacity-5 select-none" style={{ WebkitTextStroke: '1px rgba(31, 149, 201, 0.5)' }}>
+                SYSTEMS
+              </h1>
+              
+              <h2 className="relative text-5xl md:text-7xl xl:text-[6rem] font-extrabold text-white leading-[0.95] tracking-tighter">
+                Systematic <br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-400 to-indigo-500 italic">
+                  Execution.
+                </span>
+              </h2>
             </div>
-            
-            <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl md:text-5xl">
-              <span className="block">cTrader Automate</span>
-              <span className="block mt-2 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-teal-400">
-                Trading Algorithms Made Simple
-              </span>
-            </h1>
-            
-            <p className="mt-3 text-lg text-gray-300 max-w-2xl">
-              Create, customize, and deploy algorithmic trading strategies with ease. Take advantage of market opportunities 24/7 with smart automation.
+
+            <p className="text-lg md:text-xl text-gray-400 font-light leading-relaxed mt-2 border-l-2 border-brand-500 pl-6 max-w-2xl">
+              Eliminate human latency. Deploy your C#, Python, or FIX protocol algorithms directly into our NY4 co-located matching engine. Engineered for High-Frequency Trading (HFT) with unrestricted rate limits.
             </p>
 
-            <div className="flex flex-wrap gap-4 mt-6">
-              <Link href="/register" className="px-6 py-3 text-base font-medium text-white bg-blue-600 rounded-lg shadow-lg hover:bg-blue-700 transition-all duration-200">
-                Get Started
+            {/* Action Matrix */}
+            <div className="flex flex-col sm:flex-row items-center gap-6 pt-4">
+              <Link 
+                href="/register" 
+                className="group relative flex items-center justify-center h-14 px-8 bg-brand-600 w-full sm:w-auto overflow-hidden shadow-[0_0_30px_rgba(31,149,201,0.2)] hover:bg-brand-500 transition-colors"
+                style={{ clipPath: 'polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px)' }}
+              >
+                <span className="relative z-10 text-xs font-black text-white uppercase tracking-widest flex items-center">
+                  Generate API Keys <Code className="ml-3 w-4 h-4 group-hover:scale-110 transition-transform" />
+                </span>
               </Link>
-              <a href="#features" className="px-6 py-3 text-base font-medium text-gray-300 bg-gray-800 border border-gray-700 rounded-lg shadow-lg hover:bg-gray-700 transition-all duration-200">
-                Explore Features
-              </a>
             </div>
           </div>
 
-          {/* Right Column - Chart Animation */}
-          <div className="w-full md:w-1/2">
-            <div className="relative h-64 md:h-96 overflow-hidden rounded-2xl shadow-2xl bg-gray-800/50 backdrop-blur-sm border border-gray-700">
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-full h-full p-6">
-                  <div className="relative w-full h-full flex flex-col">
-                    
-                    {/* Header */}
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                        <span className="text-xs font-medium text-gray-300">BTC/USD</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-bold text-green-400">$38,245.75</span>
-                        <span className="text-xs text-green-400">+2.4%</span>
-                      </div>
-                    </div>
+          {/* RIGHT: COMPILER HUD (5 Columns) */}
+          <div className="lg:col-span-5 relative hidden lg:block">
+            
+            <div className="relative bg-[#0D1117]/90 border border-white/10 p-6 backdrop-blur-2xl shadow-[0_0_50px_rgba(0,0,0,0.8)] z-20"
+                 style={{ clipPath: 'polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px)' }}>
+              
+              <div className="flex items-center justify-between border-b border-white/5 pb-4 mb-6">
+                <div className="flex items-center space-x-2">
+                  <Zap className="w-4 h-4 text-brand-400" />
+                  <span className="text-[10px] font-mono text-white uppercase tracking-[0.3em]">Compiler_Instance_01</span>
+                </div>
+                <div className="w-2 h-2 rounded-full bg-brand-500 animate-pulse shadow-[0_0_8px_#1f95c9]"></div>
+              </div>
 
-                    {/* SVG Trading Chart Animation */}
-                    <div className="flex-1 overflow-hidden relative">
-                      <svg className="w-full h-full" viewBox="0 0 400 200" preserveAspectRatio="none">
-                        {/* Grid Lines */}
-                        <line x1="0" y1="40" x2="400" y2="40" stroke="#374151" strokeWidth="0.5"></line>
-                        <line x1="0" y1="80" x2="400" y2="80" stroke="#374151" strokeWidth="0.5"></line>
-                        <line x1="0" y1="120" x2="400" y2="120" stroke="#374151" strokeWidth="0.5"></line>
-                        <line x1="0" y1="160" x2="400" y2="160" stroke="#374151" strokeWidth="0.5"></line>
+              {/* Code Terminal Simulation */}
+              <div className="bg-[#020305] border border-white/5 p-4 rounded-sm font-mono text-xs overflow-hidden h-[240px] relative">
+                <div className="text-gray-500 mb-2">// INITIALIZING FIX API PROTOCOL</div>
+                <div className="text-brand-400 mb-1">import <span className="text-white">SkyInvestOrg.Core.Execution;</span></div>
+                <div className="text-brand-400 mb-4">import <span className="text-white">SkyInvestOrg.MarketData;</span></div>
+                
+                <div className="text-gray-300 mb-1">public async Task ExecuteOrder() {'{'}</div>
+                <div className="pl-4 text-gray-300 mb-1">var order = new Order()</div>
+                <div className="pl-4 text-gray-300 mb-1">Symbol = <span className="text-success-400">&quot;EURUSD&quot;</span>,</div>
+                <div className="pl-4 text-gray-300 mb-1">Type = OrderType.<span className="text-brand-400">Market</span>,</div>
+                <div className="pl-4 text-gray-300 mb-1">Volume = <span className="text-purple-400">100.0</span></div>
+                <div className="pl-4 text-gray-300 mb-1">;</div>
+                <div className="pl-4 text-gray-300 mt-2">await Engine.<span className="text-brand-400">SubmitAsync</span>(order);</div>
+                <div className="text-gray-300 mb-2">{'}'}</div>
 
-                        <defs>
-                          <linearGradient id="chartGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                            <stop offset="0%" stopColor="#3B82F6"></stop>
-                            <stop offset="100%" stopColor="#10B981"></stop>
-                          </linearGradient>
-                        </defs>
+                {/* Animated Typing Cursor */}
+                <div className="w-2 h-4 bg-brand-500 animate-pulse inline-block"></div>
 
-                        {/* Animated Chart Path */}
-                        <path stroke="url(#chartGradient)" strokeWidth="2" fill="none" strokeLinecap="round" d="M0,150 C20,140 40,100 60,110 C80,120 100,80 120,70 C140,60 160,90 180,80 C200,70 220,30 240,40 C260,50 280,70 300,60 C320,50 340,30 360,40 C380,50 400,30 400,20">
-                          <animate attributeName="d" dur="20s" repeatCount="indefinite" values="
-                            M0,150 C20,140 40,100 60,110 C80,120 100,80 120,70 C140,60 160,90 180,80 C200,70 220,30 240,40 C260,50 280,70 300,60 C320,50 340,30 360,40 C380,50 400,30 400,20;
-                            M0,140 C20,130 40,110 60,100 C80,90 100,70 120,80 C140,90 160,100 180,90 C200,80 220,40 240,50 C260,60 280,80 300,70 C320,60 340,40 360,50 C380,60 400,40 400,30;
-                            M0,130 C20,140 40,120 60,130 C80,140 100,100 120,90 C140,80 160,70 180,60 C200,50 220,60 240,70 C260,80 280,90 300,80 C320,70 340,50 360,60 C380,70 400,50 400,40;
-                            M0,150 C20,140 40,100 60,110 C80,120 100,80 120,70 C140,60 160,90 180,80 C200,70 220,30 240,40 C260,50 280,70 300,60 C320,50 340,30 360,40 C380,50 400,30 400,20" 
-                          />
-                        </path>
-                      </svg>
+                <div className="absolute bottom-0 left-0 w-full h-12 bg-gradient-to-t from-[#020305] to-transparent"></div>
+              </div>
 
-                      {/* Algorithm Markers */}
-                      <div className="absolute top-1/4 right-1/3 w-4 h-4 bg-blue-500/30 rounded-full animate-ping">
-                        <div className="absolute inset-0 w-2 h-2 m-1 bg-blue-400 rounded-full"></div>
-                      </div>
-                      <div className="absolute top-2/3 left-1/4 w-4 h-4 bg-green-500/30 rounded-full animate-ping" style={{ animationDelay: '1s' }}>
-                        <div className="absolute inset-0 w-2 h-2 m-1 bg-green-400 rounded-full"></div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Algo Bot Elements */}
-                  <div className="absolute bottom-4 right-4 flex items-center gap-2 px-3 py-1 bg-blue-600/30 rounded-full border border-blue-500/30">
-                    <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
-                    <span className="text-xs font-medium text-blue-300">Algo Bot Running</span>
-                  </div>
-                  
+              {/* Stats */}
+              <div className="grid grid-cols-2 gap-4 mt-4">
+                <div className="bg-white/[0.02] border border-white/5 p-3">
+                  <span className="block text-[9px] font-mono text-gray-500 uppercase tracking-widest mb-1">REST Latency</span>
+                  <span className="block text-lg font-mono font-bold text-white">&lt; 8ms</span>
+                </div>
+                <div className="bg-white/[0.02] border border-white/5 p-3">
+                  <span className="block text-[9px] font-mono text-gray-500 uppercase tracking-widest mb-1">FIX Protocol</span>
+                  <span className="block text-lg font-mono font-bold text-white">Active (v4.4)</span>
                 </div>
               </div>
+
             </div>
           </div>
-
         </div>
       </div>
     </section>

@@ -1,119 +1,187 @@
-import Link from 'next/link';
+"use client";
 
-export default function ForexHero() {
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { Activity, ShieldCheck, Zap, ArrowUpRight, BarChart4, Network, Terminal } from 'lucide-react';
+
+// Simulated high-frequency order book data
+const orderBook = [
+  { price: '64,281.90', amount: '1.452', time: '11:29:01', type: 'sell' },
+  { price: '64,281.45', amount: '0.890', time: '11:29:00', type: 'sell' },
+  { price: '64,280.10', amount: '5.100', time: '11:28:59', type: 'sell' },
+  { price: '64,279.80', amount: '2.341', time: '11:28:59', type: 'buy' },
+  { price: '64,278.50', amount: '0.120', time: '11:28:58', type: 'buy' },
+  { price: '64,275.00', amount: '8.450', time: '11:28:57', type: 'buy' },
+];
+
+export default function CommandCenterHero() {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
+
   return (
-    <section className="relative overflow-hidden bg-gradient-to-br from-gray-900 to-gray-800">
-      {/* Background Elements */}
-      <div className="absolute inset-0 z-0 pointer-events-none opacity-20">
-        <div className="absolute top-0 right-0 w-full h-full">
-          <svg className="absolute top-0 right-0 w-full h-full" viewBox="0 0 800 800">
-            <defs>
-              <linearGradient id="forexGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop stopColor="#3B82F6" stopOpacity=".25" offset="0%" />
-                <stop stopColor="#10B981" stopOpacity=".2" offset="50%" />
-                <stop stopColor="#6366F1" stopOpacity=".15" offset="100%" />
-              </linearGradient>
-            </defs>
-            <path d="M120,300 L120,200 L150,200 L150,300 Z" fill="rgba(16, 185, 129, 0.5)" />
-            <path d="M120,200 L120,300 L150,300 L150,200 Z" stroke="rgba(16, 185, 129, 0.5)" strokeWidth="2" fill="none" />
-            <path d="M135,150 L135,350" stroke="rgba(16, 185, 129, 0.5)" strokeWidth="2" />
-            
-            <path d="M220,250 L220,400 L250,400 L250,250 Z" fill="rgba(239, 68, 68, 0.5)" />
-            <path d="M220,250 L220,400 L250,400 L250,250 Z" stroke="rgba(239, 68, 68, 0.5)" strokeWidth="2" fill="none" />
-            <path d="M235,200 L235,450" stroke="rgba(239, 68, 68, 0.5)" strokeWidth="2" />
-            
-            <path d="M320,320 L320,220 L350,220 L350,320 Z" fill="rgba(16, 185, 129, 0.5)" />
-            <path d="M320,220 L320,320 L350,320 L350,220 Z" stroke="rgba(16, 185, 129, 0.5)" strokeWidth="2" fill="none" />
-            <path d="M335,170 L335,370" stroke="rgba(16, 185, 129, 0.5)" strokeWidth="2" />
-          </svg>
-        </div>
+    <section className="relative w-full min-h-screen bg-[#020305] overflow-hidden flex items-center pt-20">
+      
+      {/* 1. DEEP SPACE BACKGROUND & TEXTURES */}
+      <div className="absolute inset-0 pointer-events-none">
+        {/* Massive Ambient Glow */}
+        <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] bg-brand-600/10 rounded-full blur-[150px] mix-blend-screen"></div>
+        <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-success-600/5 rounded-full blur-[150px] mix-blend-screen"></div>
+        
+        {/* CSS Grid Lines */}
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_50%,#000_70%,transparent_100%)]"></div>
+        
+        {/* Noise Texture */}
+        <div className="absolute inset-0 opacity-[0.03] mix-blend-overlay bg-[url('data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMjAwIDIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZmlsdGVyIGlkPSJub2lzZUZpbHRlciI+PGZlVHVyYnVsZW5jZSB0eXBlPSJmcmFjdGFsTm9pc2UiIGJhc2VGcmVxdWVuY3k9IjAuNjUiIG51bU9jdGF2ZXM9IjMiIHN0aXRjaFRpbGVzPSJzdGl0Y2giLz48L2ZpbHRlcj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWx0ZXI9InVybCgibm9pc2VGaWx0ZXIpIi8+PC9zdmc+')]"></div>
       </div>
 
-      <div className="relative z-10 px-4 py-20 mx-auto max-w-7xl sm:px-6 lg:px-8">
-        <div className="flex flex-col lg:flex-row lg:items-center">
+      <div className="max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-center">
           
-          {/* Text Content */}
-          <div className="w-full lg:w-2/3 mb-12 lg:mb-0 space-y-6">
-            <div className="inline-block px-3 py-1 mb-2 text-xs font-semibold tracking-wider text-blue-400 uppercase bg-blue-900/30 rounded-full border border-blue-800/50">
-              Global Markets
-            </div>
-            <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl md:text-6xl">
-              <span className="block">Forex</span>
-              <span className="block mt-2 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-400 to-green-400">
-                Foreign Exchange Market
+          {/* LEFT: THE SOVEREIGN COPY (7 Columns) */}
+          <div className="lg:col-span-7 space-y-10 relative">
+            
+            {/* System Status Ribbon */}
+            <div className="inline-flex items-center space-x-4 p-2 pr-6 rounded-full bg-white/[0.02] border border-white/5 backdrop-blur-xl">
+              <div className="w-8 h-8 rounded-full bg-brand-500/20 flex items-center justify-center border border-brand-500/30">
+                <Terminal className="w-4 h-4 text-brand-400" />
+              </div>
+              <span className="text-[10px] font-mono text-gray-400 uppercase tracking-[0.3em]">
+                System_Status: <span className="text-success-400 font-bold">Optimal</span> // NY4 Connected
               </span>
-            </h1>
-            <p className="mt-4 text-lg text-gray-300 max-w-2xl leading-relaxed">
-              The foreign exchange market is a global decentralized or over-the-counter market for the trading of currencies. It includes all aspects of buying, selling and exchanging currencies at current or determined prices.
+            </div>
+
+            {/* Massive Typography */}
+            <div className="relative">
+              {/* Outline ghost text behind */}
+              <h1 className="absolute -top-12 -left-4 text-[8rem] md:text-[12rem] font-black text-transparent opacity-5 select-none" style={{ WebkitTextStroke: '1px rgba(255,255,255,0.5)' }}>
+                LIQUIDITY
+              </h1>
+              
+              <h2 className="relative text-6xl md:text-8xl xl:text-[6.5rem] font-extrabold text-white leading-[0.9] tracking-tighter">
+                Institutional <br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-400 via-indigo-400 to-brand-600">
+                  Firepower.
+                </span>
+              </h2>
+            </div>
+
+            <p className="text-lg md:text-xl text-gray-400 font-light max-w-2xl leading-relaxed border-l-2 border-brand-500/50 pl-6">
+              Bypass retail bottlenecks. SkyInvestOrg connects you directly to Tier-1 liquidity pools with sub-millisecond algorithmic routing and sovereign-grade asset custody.
             </p>
-            <div className="flex flex-wrap gap-4 mt-8">
-              <a href="#forex-markets" className="px-8 py-3 text-lg font-medium text-white bg-blue-600 rounded-lg shadow-lg hover:bg-blue-700 transition-all duration-200">
-                Explore Markets
-              </a>
-              <Link href="/register" className="px-8 py-3 text-lg font-medium text-gray-300 bg-gray-800 border border-gray-700 rounded-lg shadow-lg hover:bg-gray-700 transition-all duration-200">
-                Start Trading
+
+            {/* Action Matrix */}
+            <div className="flex flex-col sm:flex-row items-center gap-6 pt-4">
+              <Link 
+                href="/register" 
+                className="group relative flex items-center justify-center h-16 px-10 bg-brand-600 w-full sm:w-auto overflow-hidden"
+                style={{ clipPath: 'polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px)' }} // Sci-fi angled corners
+              >
+                <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out"></div>
+                <span className="relative z-10 text-sm font-black text-white uppercase tracking-widest flex items-center">
+                  Deploy Capital <ArrowUpRight className="ml-3 w-5 h-5 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                </span>
+              </Link>
+              
+              <Link 
+                href="/about" 
+                className="group flex items-center justify-center h-16 px-10 border border-white/10 bg-white/[0.02] hover:bg-white/[0.05] w-full sm:w-auto transition-colors"
+                style={{ clipPath: 'polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px)' }}
+              >
+                <span className="text-sm font-bold text-gray-300 group-hover:text-white uppercase tracking-widest transition-colors">
+                  View Infrastructure
+                </span>
               </Link>
             </div>
-          </div>
 
-          {/* Mini Cards */}
-          <div className="w-full lg:w-1/3 relative">
-            <div className="grid gap-4">
-              
-              {/* EUR/USD */}
-              <div className="bg-gray-800/50 backdrop-blur-sm p-4 rounded-xl border border-gray-700 hover:-translate-y-1 transition-all duration-300">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <div className="w-10 h-10 bg-blue-600/20 rounded-full flex items-center justify-center text-blue-400 font-bold mr-3">
-                      €/$
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-bold text-white">EUR/USD</h3>
-                      <p className="text-sm text-gray-400">Euro / US Dollar</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-green-400 font-medium">1.1842</div>
-                    <div className="text-xs text-green-400">+0.05%</div>
-                  </div>
-                </div>
-                <div className="mt-3 h-10">
-                  <svg className="w-full h-full" viewBox="0 0 100 30">
-                    <path d="M0,15 L10,13 L20,16 L30,14 L40,17 L50,12 L60,15 L70,10 L80,13 L90,11 L100,8" fill="none" stroke="#10B981" strokeWidth="2" />
-                  </svg>
-                </div>
+            {/* Data Points */}
+            <div className="grid grid-cols-3 gap-6 pt-10 border-t border-white/5 max-w-2xl">
+              <div>
+                <p className="text-3xl font-mono font-bold text-white mb-1">$4.2B</p>
+                <p className="text-[9px] text-gray-500 uppercase tracking-[0.2em] font-mono">Daily Volume</p>
               </div>
-
-              {/* GBP/USD */}
-              <div className="bg-gray-800/50 backdrop-blur-sm p-4 rounded-xl border border-gray-700 hover:-translate-y-1 transition-all duration-300">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <div className="w-10 h-10 bg-indigo-600/20 rounded-full flex items-center justify-center text-indigo-400 font-bold mr-3">
-                      £/$
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-bold text-white">GBP/USD</h3>
-                      <p className="text-sm text-gray-400">British Pound / US Dollar</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-red-400 font-medium">1.3721</div>
-                    <div className="text-xs text-red-400">-0.12%</div>
-                  </div>
-                </div>
-                <div className="mt-3 h-10">
-                  <svg className="w-full h-full" viewBox="0 0 100 30">
-                    <path d="M0,10 L10,12 L20,8 L30,14 L40,16 L50,15 L60,18 L70,20 L80,17 L90,19 L100,22" fill="none" stroke="#EF4444" strokeWidth="2" />
-                  </svg>
-                </div>
+              <div>
+                <p className="text-3xl font-mono font-bold text-white mb-1">&lt;12ms</p>
+                <p className="text-[9px] text-gray-500 uppercase tracking-[0.2em] font-mono">Execution Speed</p>
               </div>
-
+              <div>
+                <p className="text-3xl font-mono font-bold text-white mb-1">0.0</p>
+                <p className="text-[9px] text-gray-500 uppercase tracking-[0.2em] font-mono">Raw Spreads</p>
+              </div>
             </div>
-            {/* Blurs */}
-            <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-blue-500/20 rounded-full filter blur-xl -z-10"></div>
-            <div className="absolute -top-6 -left-6 w-24 h-24 bg-green-500/20 rounded-full filter blur-xl -z-10"></div>
           </div>
 
+          {/* RIGHT: THE LIVE HUD (5 Columns) */}
+          <div className="lg:col-span-5 relative h-full min-h-[600px] hidden lg:block">
+            
+            {/* HUD Central Glass Panel */}
+            <div className="absolute top-1/2 right-0 -translate-y-1/2 w-[110%] bg-gray-900/40 border border-white/10 p-6 backdrop-blur-2xl shadow-[0_0_50px_rgba(0,0,0,0.8)] z-20"
+                 style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 30px), calc(100% - 30px) 100%, 0 100%)' }}>
+              
+              <div className="flex items-center justify-between border-b border-white/5 pb-4 mb-6">
+                <div className="flex items-center space-x-2">
+                  <Network className="w-4 h-4 text-brand-400" />
+                  <span className="text-[10px] font-mono text-white uppercase tracking-[0.3em]">Live_Order_Book</span>
+                </div>
+                <div className="flex space-x-1">
+                  <div className="w-1.5 h-1.5 bg-success-500 rounded-full animate-ping"></div>
+                </div>
+              </div>
+
+              {/* Order Book Table */}
+              <div className="space-y-3">
+                <div className="flex justify-between text-[9px] font-mono text-gray-600 uppercase tracking-widest border-b border-white/5 pb-2">
+                  <span>Price (USD)</span>
+                  <span>Amount</span>
+                  <span>Time</span>
+                </div>
+                {orderBook.map((order, idx) => (
+                  <div key={idx} className="flex justify-between items-center text-xs font-mono group hover:bg-white/5 p-1 transition-colors">
+                    <span className={order.type === 'sell' ? 'text-error-400' : 'text-success-400'}>
+                      {order.price}
+                    </span>
+                    <span className="text-white">{order.amount}</span>
+                    <span className="text-gray-500">{order.time}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Spread Indicator */}
+              <div className="mt-6 pt-4 border-t border-white/5 flex items-center justify-between">
+                <span className="text-[10px] font-mono text-gray-500 uppercase tracking-widest">Aggregate Spread</span>
+                <span className="text-sm font-mono font-bold text-white bg-white/10 px-3 py-1 rounded">0.1 Pips</span>
+              </div>
+            </div>
+
+            {/* Floating Element 1: Security Shield */}
+            <div className="absolute top-10 right-20 bg-gray-950/80 border border-success-500/30 p-4 backdrop-blur-xl z-30 flex items-center space-x-4 shadow-[0_0_30px_rgba(16,185,129,0.1)]"
+                 style={{ clipPath: 'polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px)' }}>
+              <ShieldCheck className="w-8 h-8 text-success-500" />
+              <div>
+                <p className="text-[9px] font-mono text-gray-400 uppercase tracking-widest">Custody Status</p>
+                <p className="text-xs font-bold text-white uppercase">Multi-Sig Secured</p>
+              </div>
+            </div>
+
+            {/* Floating Element 2: Execution Chart */}
+            <div className="absolute bottom-10 left-[-2rem] bg-brand-900/20 border border-brand-500/30 p-5 backdrop-blur-xl z-30 shadow-[0_0_30px_rgba(31,149,201,0.2)]"
+                 style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%)' }}>
+              <div className="flex items-center space-x-3 mb-4">
+                <Activity className="w-5 h-5 text-brand-400" />
+                <span className="text-[10px] font-mono text-brand-400 uppercase tracking-widest">Routing Efficiency</span>
+              </div>
+              <div className="flex items-end space-x-1 h-12">
+                {[40, 70, 45, 90, 65, 100, 80].map((h, i) => (
+                  <div key={i} className="w-3 bg-brand-500/80 hover:bg-white transition-colors" style={{ height: `${h}%` }}></div>
+                ))}
+              </div>
+            </div>
+
+          </div>
         </div>
       </div>
     </section>

@@ -1,70 +1,77 @@
-import { Shield, Trophy, Headset, Lock, UserCheck, Activity } from 'lucide-react';
-import Link from 'next/link';
+import { Check, X, Terminal } from 'lucide-react';
 
-const reasons = [
-  { text: 'Globally Regulated', icon: Shield },
-  { text: '40+ International Awards', icon: Trophy },
-  { text: '24/7 Multilingual Customer Support', icon: Headset },
-  { text: 'Segregated Client Funds', icon: Lock },
-  { text: 'Personal Account Managers', icon: UserCheck },
-  { text: 'Consistently Tighter Spreads', icon: Activity },
+const comparison = [
+  { feature: 'Execution Model', retail: 'Market Maker (B-Book)', us: 'Pure STP (A-Book)' },
+  { feature: 'Pricing Source', retail: 'Internal Dealing Desk', us: '25+ Aggregated Prime LPs' },
+  { feature: 'Average Latency', retail: '150ms - 300ms', us: '< 12ms (NY4 Co-location)' },
+  { feature: 'Conflict of Interest', retail: 'High (Profit from losses)', us: 'Zero (Volume-based revenue)' },
+  { feature: 'Algo Restrictions', retail: 'Scalping/HFT Banned', us: 'All Strategies Encouraged' },
+  { feature: 'Fund Security', retail: 'Commingled Accounts', us: 'Tier-1 Segregated / Cold Vaults' },
 ];
 
 export default function WhyChooseUs() {
   return (
-    <section className="py-16 bg-gray-800 relative overflow-hidden">
-      {/* Background pattern */}
-      <div className="absolute inset-0 z-0 opacity-5 pointer-events-none">
-        <svg width="100%" height="100%" viewBox="0 0 800 800" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse">
-              <path d="M 50 0 L 0 0 0 50" fill="none" stroke="white" strokeWidth="0.5"></path>
-            </pattern>
-          </defs>
-          <rect width="100%" height="100%" fill="url(#grid)"></rect>
-        </svg>
-      </div>
+    <section className="py-24 bg-[#0D1117] relative overflow-hidden">
+      
+      {/* Background Texture */}
+      <div className="absolute inset-0 opacity-[0.02] mix-blend-overlay pointer-events-none bg-[url('data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMjAwIDIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZmlsdGVyIGlkPSJub2lzZUZpbHRlciI+PGZlVHVyYnVsZW5jZSB0eXBlPSJmcmFjdGFsTm9pc2UiIGJhc2VGcmVxdWVuY3k9IjAuNjUiIG51bU9jdGF2ZXM9IjMiIHN0aXRjaFRpbGVzPSJzdGl0Y2giLz48L2ZpbHRlcj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWx0ZXI9InVybCgibm9pc2VGaWx0ZXIpIi8+PC9zdmc+')]"></div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-white">Why is SkyInvestOrg One of the World's Most Trusted Brands?</h2>
-          <div className="w-24 h-1 mx-auto mt-4 rounded-full bg-gradient-to-r from-blue-500 to-teal-400"></div>
-        </div>
-
-        <div className="flex flex-col lg:flex-row gap-12 items-center">
-          {/* Image Side */}
-          <div className="w-full lg:w-1/2">
-            <div className="bg-gray-900/50 backdrop-blur-sm border border-gray-700 rounded-xl overflow-hidden shadow-2xl h-64 md:h-96 flex items-center justify-center">
-               {/* Replace with actual image path if needed */}
-               <p className="text-gray-500">[ Trading Platform Image Placeholder ]</p>
-               <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-teal-400 opacity-10"></div>
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 border-b border-white/10 pb-8">
+          <div>
+            <div className="inline-flex items-center space-x-3 mb-4">
+              <Terminal className="w-5 h-5 text-brand-500" />
+              <span className="text-[10px] font-mono font-bold uppercase tracking-[0.4em] text-brand-400">The Infrastructure Gap</span>
             </div>
-          </div>
-
-          {/* List Side */}
-          <div className="w-full lg:w-1/2">
-            <ul className="space-y-6">
-              {reasons.map((reason, i) => (
-                <li key={i} className="flex items-center">
-                  <div className="flex-shrink-0">
-                    <div className="w-10 h-10 rounded-full bg-blue-900/30 flex items-center justify-center">
-                      <reason.icon className="w-5 h-5 text-blue-400" />
-                    </div>
-                  </div>
-                  <div className="ml-4">
-                    <p className="text-lg font-medium text-white">{reason.text}</p>
-                  </div>
-                </li>
-              ))}
-            </ul>
-
-            <div className="mt-10">
-              <Link href="/login" className="inline-flex items-center px-8 py-3 border border-transparent text-base font-medium rounded-md shadow-lg text-white bg-blue-600 hover:bg-blue-700 transition-all duration-200">
-                Learn About Our Commissions
-              </Link>
-            </div>
+            <h2 className="text-4xl md:text-5xl font-extrabold text-white tracking-tighter">
+              Retail vs <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-400 to-indigo-500 italic">Sovereign.</span>
+            </h2>
           </div>
         </div>
+
+        {/* The Comparison Ledger */}
+        <div className="bg-[#020305] border border-white/5 backdrop-blur-xl relative overflow-hidden"
+             style={{ clipPath: 'polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px)' }}>
+          
+          <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-brand-500/50 to-transparent"></div>
+          
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead className="bg-white/[0.02]">
+                <tr className="border-b border-white/10">
+                  <th className="px-6 py-6 text-[10px] font-mono text-gray-500 uppercase tracking-widest w-1/3">Infrastructure Metric</th>
+                  <th className="px-6 py-6 text-[10px] font-mono text-gray-600 uppercase tracking-widest w-1/3 border-l border-white/5">Standard Retail Broker</th>
+                  <th className="px-6 py-6 text-sm font-black text-brand-400 uppercase tracking-widest w-1/3 border-l border-white/5 bg-brand-500/5">SkyInvestOrg Terminal</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/5">
+                {comparison.map((row, i) => (
+                  <tr key={i} className="hover:bg-white/[0.02] transition-colors">
+                    <td className="px-6 py-6 text-sm font-bold text-white tracking-wide">{row.feature}</td>
+                    
+                    {/* Retail Column */}
+                    <td className="px-6 py-6 border-l border-white/5">
+                      <div className="flex items-center space-x-3 text-gray-500">
+                        <X className="w-4 h-4" />
+                        <span className="font-mono text-xs uppercase">{row.retail}</span>
+                      </div>
+                    </td>
+                    
+                    {/* Sovereign Column */}
+                    <td className="px-6 py-6 border-l border-white/5 bg-brand-500/[0.02]">
+                      <div className="flex items-center space-x-3 text-brand-400">
+                        <Check className="w-5 h-5" />
+                        <span className="font-mono text-xs font-bold uppercase">{row.us}</span>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
       </div>
     </section>
   );

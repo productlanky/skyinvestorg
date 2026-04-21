@@ -1,60 +1,46 @@
 import Link from 'next/link';
-import { ArrowRight, HelpCircle, ShieldCheck } from 'lucide-react';
+import { Terminal, ArrowRight, ShieldAlert, Cpu } from 'lucide-react';
 
 export default function AutomateExpertSupport() {
   return (
-    <section className="py-20 bg-gray-900">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
+    <section className="py-24 bg-[#05070a] relative overflow-hidden">
+      
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="relative group perspective-[1500px]">
           
-          {/* Image Column */}
-          <div className="relative">
-            <div className="absolute -inset-4">
-              <div className="w-full h-full mx-auto opacity-30 blur-lg filter">
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-emerald-500 rounded-3xl"></div>
+          <div className="absolute -inset-[1px] bg-gradient-to-r from-brand-500/0 via-brand-500/50 to-brand-500/0 opacity-30 group-hover:opacity-100 transition-opacity duration-1000"
+               style={{ clipPath: 'polygon(30px 0, 100% 0, 100% calc(100% - 30px), calc(100% - 30px) 100%, 0 100%, 0 30px)' }}></div>
+          
+          <div className="relative bg-[#0D1117]/90 backdrop-blur-2xl p-8 md:p-16 flex flex-col md:flex-row items-center justify-between shadow-2xl gap-8"
+               style={{ clipPath: 'polygon(30px 0, 100% 0, 100% calc(100% - 30px), calc(100% - 30px) 100%, 0 100%, 0 30px)' }}>
+            
+            <div className="text-center md:text-left flex-1">
+              <div className="inline-flex items-center space-x-3 mb-4">
+                <Cpu className="w-4 h-4 text-brand-400" />
+                <span className="text-[10px] font-mono font-bold text-brand-400 uppercase tracking-[0.3em] animate-pulse">Quant Engineers Online</span>
               </div>
-            </div>
-            <div className="relative rounded-xl overflow-hidden shadow-2xl bg-gray-800 border border-gray-700 h-64 md:h-96 flex items-center justify-center">
-               <p className="text-gray-500">[ Support Image Placeholder ]</p>
-               <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 to-teal-400/10"></div>
-            </div>
-          </div>
-
-          {/* Content Column */}
-          <div className="space-y-8">
-            <div className="inline-block px-3 py-1 text-xs font-semibold tracking-wider text-blue-400 uppercase bg-blue-900/30 border border-blue-800/30 rounded-full">
-              Premium Support
-            </div>
-
-            <h2 className="text-3xl font-extrabold text-white sm:text-4xl">
-              <span className="block">STAY UP TO DATE</span>
-              <span className="block mt-2 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-teal-400">
-                WITH OUR EXPERTS!
-              </span>
-            </h2>
-
-            <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-xl p-6 flex items-start space-x-4 hover:border-blue-500/50 transition-colors">
-              <HelpCircle className="w-6 h-6 text-blue-400 flex-shrink-0 mt-1" />
-              <p className="text-gray-300 text-lg leading-relaxed">
-                Our local and international teams are here to support you on a 24/5 basis in more than 20 languages, while our wide range of payment methods gives you greater flexibility when it comes to deposits and withdrawals.
+              <h2 className="text-3xl md:text-4xl font-black text-white tracking-tighter uppercase mb-4">
+                API Integration <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-400 to-indigo-400 italic">Support.</span>
+              </h2>
+              <p className="text-sm text-gray-400 font-light max-w-xl leading-relaxed">
+                Require direct assistance configuring your FIX API endpoints or structuring C# execution logic? Establish a secure link with our infrastructure team.
               </p>
             </div>
 
-            <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-xl p-6 flex items-start space-x-4 hover:border-emerald-500/50 transition-colors">
-              <ShieldCheck className="w-6 h-6 text-emerald-400 flex-shrink-0 mt-1" />
-              <div>
-                <h3 className="text-xl font-bold text-white mb-2">Experience More Than Trading</h3>
-                <p className="text-gray-300 text-lg leading-relaxed">
-                  Our success is centred around a number of core values. They include providing competitive brokerage fees through tight spreads, ensuring lightning-fast execution, access to advanced trading platforms, and exceptional customer service.
-                </p>
-              </div>
-            </div>
-
-            <div className="pt-2">
-              <Link href="/about" className="inline-flex items-center px-8 py-4 border border-transparent text-base font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 transition-all duration-200 shadow-lg">
-                Learn More
-                <ArrowRight className="ml-2 w-5 h-5" />
+            <div className="flex-shrink-0 w-full md:w-auto flex flex-col items-center">
+              <Link 
+                href="/contact" 
+                className="group relative flex items-center justify-center h-14 px-8 bg-brand-600 w-full overflow-hidden hover:bg-brand-500 transition-colors shadow-[0_0_40px_rgba(31,149,201,0.3)] mb-4"
+                style={{ clipPath: 'polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px)' }}
+              >
+                <span className="relative z-10 text-xs font-black text-white uppercase tracking-widest flex items-center">
+                  Open Comm Channel <ArrowRight className="ml-3 w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </span>
               </Link>
+              <div className="flex items-center space-x-2 text-[9px] font-mono text-gray-600 uppercase tracking-widest">
+                <ShieldAlert className="w-3 h-3 text-brand-500/50" />
+                <span>SLA: &lt; 2 Hours</span>
+              </div>
             </div>
 
           </div>

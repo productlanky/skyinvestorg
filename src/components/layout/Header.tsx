@@ -1,36 +1,36 @@
 "use client";
 
 import { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import Link from 'next/link';
-import { Menu, X, ChevronDown, Lock, Monitor, Laptop, Smartphone } from 'lucide-react';
+import { Menu, X, ChevronDown, Lock, Activity, Cpu, Zap, ArrowRight } from 'lucide-react';
 
-// Centralized navigation data makes it easy to update links later
 const navDropdowns = [
   {
-    title: 'Trading',
+    title: 'Markets & Assets',
     items: [
-      { name: 'Cryptocurrencies', href: '/cryptocurrencies' },
-      { name: 'Forex', href: '/forex' },
-      { name: 'Shares', href: '/share' },
-      { name: 'Indices', href: '/indices' },
-      { name: 'ETFs', href: '/etfs' },
+      { name: 'Cryptocurrencies', href: '/cryptocurrencies', desc: 'Digital assets & tokens' },
+      { name: 'Forex Pairs', href: '/forex', desc: 'Global currency exchange' },
+      { name: 'Global Shares', href: '/share', desc: 'Blue-chip equities' },
+      { name: 'Market Indices', href: '/indices', desc: 'Sector benchmarks' },
+      { name: 'Thematic ETFs', href: '/etfs', desc: 'Diversified baskets' },
     ],
   },
   {
-    title: 'System',
+    title: 'Trading Systems',
     items: [
-      { name: 'Trade', href: '/trade' },
-      { name: 'Copy Trading', href: '/copy' },
-      { name: 'Automated Trading', href: '/automate' },
+      { name: 'Web Terminal', href: '/trade', desc: 'Execute orders live' },
+      { name: 'Copy Trading', href: '/copy', desc: 'Mirror elite alpha' },
+      { name: 'Automated Trading', href: '/automate', desc: 'C# Algorithmic engine' },
     ],
   },
   {
-    title: 'Company',
+    title: 'Institutional',
     items: [
-      { name: 'About Us', href: '/about' },
-      { name: 'Why Us', href: '/why-us' },
-      { name: 'FAQ', href: '/faq' },
-      { name: 'Legal & Regulation', href: '/regulation' },
+      { name: 'About the Firm', href: '/about', desc: 'Our liquidity & story' },
+      { name: 'The Advantage', href: '/why-us', desc: 'Why traders choose us' },
+      { name: 'Global Regulation', href: '/regulation', desc: 'Legal & compliance' },
+      { name: 'Knowledge Base', href: '/faq', desc: 'Support & assistance' },
     ],
   },
 ];
@@ -38,181 +38,198 @@ const navDropdowns = [
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
-  const [activeMobileDropdown, setActiveMobileDropdown] = useState<string | null>(null);
+  const [scrolled, setScrolled] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Close desktop dropdowns when clicking outside
   useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setActiveDropdown(null);
-      }
+    setMounted(true);
+    const handleScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener("scroll", handleScroll);
+    
+    if (mobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
     }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
 
-  const toggleDropdown = (menu: string) => {
-    setActiveDropdown(activeDropdown === menu ? null : menu);
-  };
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      document.body.style.overflow = 'unset';
+    };
+  }, [mobileMenuOpen]);
 
-  const toggleMobileDropdown = (menu: string) => {
-    setActiveMobileDropdown(activeMobileDropdown === menu ? null : menu);
-  };
+  if (!mounted) return null;
 
   return (
-    <header className="bg-gray-900 border-b border-gray-800 relative z-50">
-      <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+    <>
+      <header 
+        className={`fixed top-0 left-0 right-0 z-[50] transition-all duration-500 ${
+          scrolled 
+          ? 'py-3 bg-gray-950/90 backdrop-blur-xl border-b border-white/10 shadow-2xl' 
+          : 'py-6 bg-transparent'
+        }`}
+      >
+        <div className="max-w-[1600px] mx-auto px-6 flex items-center justify-between">
           
-          {/* Logo */}
-          <div className="flex-shrink-0">
-            <Link href="/" className="flex items-center text-xl font-bold text-white tracking-wider">
-              SKY<span className="text-blue-500">INVEST</span>ORG
-            </Link>
-          </div>
+          {/* LOGO */}
+          <Link href="/" className="flex items-center space-x-3 group">
+            <div className="w-10 h-10 rounded-xl bg-brand-600 flex items-center justify-center shadow-[0_0_20px_rgba(31,149,201,0.4)] group-hover:scale-110 transition-transform">
+              <span className="text-white font-black text-xl italic">S</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-lg font-black text-white tracking-tighter uppercase leading-none">
+                SkyInvest<span className="text-brand-500">Org</span>
+              </span>
+              <span className="text-[10px] font-mono text-gray-500 tracking-[0.3em] uppercase mt-1">Sovereign_Trading</span>
+            </div>
+          </Link>
 
-          {/* Main Navigation - Desktop */}
-          <nav className="hidden md:flex space-x-8" ref={dropdownRef}>
-            {navDropdowns.map((dropdown) => (
-              <div key={dropdown.title} className="relative">
+          {/* DESKTOP NAV (Hidden on Mobile) */}
+          <nav className="hidden xl:flex items-center space-x-2" ref={dropdownRef}>
+            {navDropdowns.map((d) => (
+              <div key={d.title} className="relative">
                 <button 
-                  onClick={() => toggleDropdown(dropdown.title)}
-                  className="group inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-200 hover:text-white focus:outline-none"
+                  onMouseEnter={() => setActiveDropdown(d.title)}
+                  className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-all flex items-center space-x-1 ${
+                    activeDropdown === d.title ? 'text-brand-400 bg-white/5' : 'text-gray-400 hover:text-white'
+                  }`}
                 >
-                  <span>{dropdown.title}</span>
-                  <ChevronDown className={`ml-1 h-4 w-4 transition-transform duration-200 ${activeDropdown === dropdown.title ? 'rotate-180 text-white' : 'text-gray-400 group-hover:text-gray-300'}`} />
+                  <span>{d.title.split(' ')[0]}</span>
+                  <ChevronDown className="w-3 h-3 ml-1" />
                 </button>
-                
-                {/* Desktop Dropdown Menu */}
-                {activeDropdown === dropdown.title && (
-                  <div className="absolute left-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-gray-800 ring-1 ring-black ring-opacity-5 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
-                    {dropdown.items.map((item) => (
-                      <Link 
-                        key={item.name} 
-                        href={item.href} 
-                        className="block px-4 py-2 text-sm text-gray-200 hover:bg-gray-700 hover:text-white"
-                        onClick={() => setActiveDropdown(null)}
-                      >
-                        {item.name}
+
+                {activeDropdown === d.title && (
+                  <div 
+                    onMouseLeave={() => setActiveDropdown(null)}
+                    className="absolute left-0 mt-4 w-[280px] rounded-2xl bg-gray-900 border border-white/10 p-2 shadow-2xl animate-in fade-in zoom-in-95 duration-200"
+                  >
+                    {d.items.map((item) => (
+                      <Link key={item.name} href={item.href} className="flex flex-col p-4 rounded-xl hover:bg-white/5 group/item">
+                        <span className="text-sm font-bold text-white group-hover/item:text-brand-400 uppercase tracking-wide">{item.name}</span>
+                        <span className="text-[11px] text-gray-500 mt-1">{item.desc}</span>
                       </Link>
                     ))}
                   </div>
                 )}
               </div>
             ))}
-
-            <Link href="/education" className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-200 hover:text-white">
-              Education
-            </Link>
-            <Link href="/contact" className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-200 hover:text-white">
-              Contact
-            </Link>
           </nav>
 
-          {/* Right Navigation - Desktop */}
-          <div className="hidden md:flex items-center">
-            
-            {/* Platform Icons */}
-            <div className="flex space-x-1 mr-6 border-r border-gray-700 pr-6">
-              <button className="text-gray-400 hover:text-gray-200 p-1" aria-label="Desktop Version">
-                <Monitor className="w-4 h-4" />
-              </button>
-              <button className="text-gray-400 hover:text-gray-200 p-1" aria-label="Windows App">
-                <Laptop className="w-4 h-4" />
-              </button>
-              <button className="text-gray-400 hover:text-gray-200 p-1" aria-label="Mobile Apps">
-                <Smartphone className="w-4 h-4" />
-              </button>
+          {/* STATUS & AUTH */}
+          <div className="hidden md:flex items-center space-x-6">
+            <div className="flex items-center space-x-4 border-r border-white/10 pr-6">
+              <Activity className="w-4 h-4 text-success-500" />
+              <Cpu className="w-4 h-4 text-brand-400" />
+              <Zap className="w-4 h-4 text-warning-400" />
             </div>
-
-            {/* Auth Buttons */}
             <div className="flex items-center space-x-4">
-              <Link href="/login" className="text-gray-200 hover:text-white flex items-center text-sm font-medium">
-                <Lock className="w-4 h-4 mr-1.5" />
-                <span>Log in</span>
+              <Link href="/login" className="text-xs font-bold text-gray-400 hover:text-white tracking-[0.2em] uppercase flex items-center">
+                <Lock className="w-3 h-3 mr-2 text-brand-500" /> Terminal
               </Link>
-              <Link href="/register" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors shadow-sm">
-                Sign up
+              <Link href="/register" className="px-6 py-2.5 bg-brand-600 rounded-full text-xs font-black text-white uppercase tracking-widest hover:bg-brand-500 transition-all">
+                Join Now
               </Link>
             </div>
           </div>
 
-          {/* Mobile menu button */}
-          <div className="flex md:hidden items-center">
+          {/* MOBILE TOGGLE */}
+          <button 
+            onClick={() => setMobileMenuOpen(true)}
+            className="xl:hidden p-3 rounded-xl bg-white/5 border border-white/10 text-white"
+          >
+            <Menu className="w-6 h-6" />
+          </button>
+        </div>
+      </header>
+
+      {/* MOBILE FULL-SCREEN PORTAL */}
+      {mobileMenuOpen && createPortal(
+        <div className="fixed inset-0 z-[10000] xl:hidden flex flex-col bg-[#05070a] overflow-hidden">
+          
+          {/* Portal Header */}
+          <div className="p-6 flex items-center justify-between border-b border-white/5 relative z-20">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 rounded-lg bg-brand-600 flex items-center justify-center">
+                <span className="text-white font-black italic">S</span>
+              </div>
+              <span className="text-[10px] font-mono text-gray-500 uppercase tracking-[0.3em]">Sovereign_Navigation</span>
+            </div>
             <button 
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)} 
-              type="button" 
-              className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
+              onClick={() => setMobileMenuOpen(false)} 
+              className="p-3 rounded-xl bg-white/5 text-white"
             >
-              <span className="sr-only">Open main menu</span>
-              {mobileMenuOpen ? (
-                <X className="block h-6 w-6" aria-hidden="true" />
-              ) : (
-                <Menu className="block h-6 w-6" aria-hidden="true" />
-              )}
+              <X className="w-6 h-6" />
             </button>
           </div>
-        </div>
-      </div>
 
-      {/* Mobile Menu Drawer */}
-      {mobileMenuOpen && (
-        <div className="md:hidden bg-gray-900 border-t border-gray-800 animate-in slide-in-from-top-4 duration-200">
-          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+          {/* Nav Content */}
+          <div className="flex-1 overflow-y-auto relative px-8 py-12">
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-brand-500/10 rounded-full blur-[120px] pointer-events-none" />
             
-            {/* Mobile Dropdowns */}
-            {navDropdowns.map((dropdown) => (
-              <div key={dropdown.title} className="py-1">
-                <button 
-                  onClick={() => toggleMobileDropdown(dropdown.title)} 
-                  className="w-full flex justify-between items-center px-4 py-3 text-base font-medium text-gray-200 hover:bg-gray-800 rounded-md"
+            <nav className="relative z-10 space-y-16">
+              {navDropdowns.map((section, sIdx) => (
+                <div 
+                  key={section.title} 
+                  className="space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-700 fill-mode-both"
+                  style={{ animationDelay: `${sIdx * 150}ms` }}
                 >
-                  <span>{dropdown.title}</span>
-                  <ChevronDown className={`h-5 w-5 text-gray-400 transition-transform duration-200 ${activeMobileDropdown === dropdown.title ? 'rotate-180' : ''}`} />
-                </button>
-                
-                {/* Mobile Sub-items */}
-                {activeMobileDropdown === dropdown.title && (
-                  <div className="pl-4 pr-2 py-1 space-y-1 bg-gray-800/50 rounded-md mt-1">
-                    {dropdown.items.map((item) => (
+                  <h3 className="text-[10px] font-black text-brand-500 uppercase tracking-[0.5em] flex items-center">
+                    <span className="w-4 h-[1px] bg-brand-500 mr-3"></span>
+                    {section.title}
+                  </h3>
+                  
+                  <div className="grid gap-8">
+                    {section.items.map((item) => (
                       <Link 
                         key={item.name} 
                         href={item.href} 
-                        className="block px-4 py-2 text-sm text-gray-300 hover:text-white hover:bg-gray-700 rounded-md"
+                        className="group flex flex-col"
                         onClick={() => setMobileMenuOpen(false)}
                       >
-                        {item.name}
+                        <div className="flex items-center justify-between">
+                          <span className="text-3xl font-extrabold text-white tracking-tighter group-active:text-brand-400 transition-colors">
+                            {item.name}
+                          </span>
+                          <ArrowRight className="w-5 h-5 text-brand-500 opacity-30 group-active:opacity-100" />
+                        </div>
+                        <p className="text-[11px] text-gray-500 mt-1 font-light tracking-wide uppercase italic">
+                          {item.desc}
+                        </p>
                       </Link>
                     ))}
                   </div>
-                )}
-              </div>
-            ))}
+                </div>
+              ))}
 
-            {/* Mobile Static Links */}
-            <Link href="/education" className="block px-4 py-3 text-base font-medium text-gray-200 hover:bg-gray-800 rounded-md" onClick={() => setMobileMenuOpen(false)}>
-              Education
-            </Link>
-            <Link href="/contact" className="block px-4 py-3 text-base font-medium text-gray-200 hover:bg-gray-800 rounded-md" onClick={() => setMobileMenuOpen(false)}>
-              Contact
-            </Link>
-
-            {/* Mobile Auth Bottom Section */}
-            <div className="pt-4 pb-3 mt-4 border-t border-gray-800">
-              <div className="flex items-center justify-between px-4 space-x-3">
-                <Link href="/login" className="flex-1 flex justify-center items-center text-gray-300 hover:bg-gray-800 hover:text-white px-3 py-2.5 rounded-md text-sm font-medium border border-gray-700" onClick={() => setMobileMenuOpen(false)}>
-                  <Lock className="w-4 h-4 mr-2" /> Log in
-                </Link>
-                <Link href="/register" className="flex-1 flex justify-center items-center bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-md text-sm font-medium" onClick={() => setMobileMenuOpen(false)}>
-                  Sign up
-                </Link>
+              {/* Static Links */}
+              <div className="pt-8 border-t border-white/5 space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-700 fill-mode-both" style={{ animationDelay: '600ms' }}>
+                 <Link href="/education" className="block text-3xl font-extrabold text-white tracking-tighter" onClick={() => setMobileMenuOpen(false)}>Academy</Link>
+                 <Link href="/contact" className="block text-3xl font-extrabold text-white tracking-tighter" onClick={() => setMobileMenuOpen(false)}>Contact Support</Link>
               </div>
-            </div>
-            
+            </nav>
           </div>
-        </div>
+
+          {/* Action Footer */}
+          <div className="p-8 bg-gray-900 border-t border-white/5 grid grid-cols-2 gap-4 relative z-20">
+            <Link 
+              href="/login" 
+              className="flex items-center justify-center py-5 bg-white/5 border border-white/10 rounded-2xl text-white font-bold uppercase tracking-widest text-xs"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Terminal
+            </Link>
+            <Link 
+              href="/register" 
+              className="flex items-center justify-center py-5 bg-brand-600 rounded-2xl text-white font-black uppercase tracking-widest text-xs"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Join Firm
+            </Link>
+          </div>
+        </div>,
+        document.body
       )}
-    </header>
+    </>
   );
 }

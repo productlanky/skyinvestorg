@@ -1,59 +1,47 @@
-import { Zap, BrainCircuit, Eye, MousePointer2 } from 'lucide-react';
+import { Cpu, Network, Zap, Lock, BarChart4, Target } from 'lucide-react';
 
-const features = [
-  {
-    title: 'Reliable',
-    desc: "Featuring the market's sharpest execution, SkyInvestOrg fills your orders in milliseconds without any requotes or price manipulation.",
-    icon: Zap,
-    gradient: 'from-blue-500/5 to-emerald-400/5',
-    hoverBorder: 'hover:border-blue-500/50',
-    iconColor: 'text-blue-400',
-    iconBg: 'bg-blue-500/10'
-  },
-  {
-    title: 'Intelligent',
-    desc: "Make informed decisions with smart market analysis tools, Live Sentiment data and in-platform market insights.",
-    icon: BrainCircuit,
-    gradient: 'from-emerald-500/5 to-blue-400/5',
-    hoverBorder: 'hover:border-emerald-500/50',
-    iconColor: 'text-emerald-400',
-    iconBg: 'bg-emerald-500/10'
-  },
-  {
-    title: 'Transparent',
-    desc: "Access transaction statistics, equity charts and detailed history of your deals for a crystal clear understanding of your performance.",
-    icon: Eye,
-    gradient: 'from-blue-500/5 to-emerald-400/5',
-    hoverBorder: 'hover:border-blue-500/50',
-    iconColor: 'text-blue-400',
-    iconBg: 'bg-blue-500/10'
-  },
-  {
-    title: 'Intuitive',
-    desc: "Easy to use and navigate, SkyInvestOrg Trader was built with real traders' needs in mind. Experience its distinct advantage.",
-    icon: MousePointer2,
-    gradient: 'from-emerald-500/5 to-blue-400/5',
-    hoverBorder: 'hover:border-emerald-500/50',
-    iconColor: 'text-emerald-400',
-    iconBg: 'bg-emerald-500/10'
-  }
+const coreNodes = [
+  { title: 'STP Execution', id: 'NODE_01', desc: 'Straight Through Processing ensures your orders are routed directly to the market. Zero dealing desk intervention. Zero conflict of interest.', icon: Network },
+  { title: 'Raw Spreads', id: 'NODE_02', desc: 'Access interbank pricing directly from our liquidity pool. Trade EUR/USD from 0.0 pips during peak market overlap sessions.', icon: Target },
+  { title: 'NY4 Co-location', id: 'NODE_03', desc: 'Our trading servers are physically co-located in the Equinix NY4 data center, placing your algorithms microseconds away from major financial hubs.', icon: Cpu },
+  { title: 'Absolute Security', id: 'NODE_04', desc: 'Client capital is vaulted in strictly segregated Tier-1 accounts, protected by multi-signature protocols and routine external audits.', icon: Lock },
+  { title: 'No Trading Restrictions', id: 'NODE_05', desc: 'Scalp, hedge, and deploy high-frequency EAs without limitation. Our infrastructure is built to handle intensive algorithmic order flow.', icon: Zap },
+  { title: 'Deep Market Depth', id: 'NODE_06', desc: 'View Level-2 pricing and execute massive block orders with minimal slippage thanks to aggregated institutional liquidity.', icon: BarChart4 }
 ];
 
 export default function WhyUsFeatures() {
   return (
-    <section className="py-16 bg-gray-900">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {features.map((feature, i) => (
-            <div key={i} className="group relative h-full">
-              <div className={`absolute inset-0 bg-gradient-to-br ${feature.gradient} rounded-xl transition-all duration-300 group-hover:scale-105`}></div>
-              <div className={`relative h-full p-6 bg-gray-800 rounded-xl border border-gray-700 transition-all duration-300 ${feature.hoverBorder}`}>
-                <div className={`w-16 h-16 mx-auto mb-6 ${feature.iconBg} rounded-xl flex items-center justify-center`}>
-                  <feature.icon className={`w-8 h-8 ${feature.iconColor}`} />
+    <section className="py-24 bg-[#05070a] border-y border-white/5 relative overflow-hidden">
+      <div className="absolute top-1/2 left-0 -translate-y-1/2 w-[600px] h-[600px] bg-brand-600/5 rounded-full blur-[150px] pointer-events-none"></div>
+
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        
+        <div className="mb-16 border-b border-white/10 pb-8">
+          <div className="inline-flex items-center space-x-3 mb-4">
+            <Cpu className="w-5 h-5 text-brand-500" />
+            <span className="text-[10px] font-mono font-bold uppercase tracking-[0.4em] text-brand-400">Infrastructure Nodes</span>
+          </div>
+          <h2 className="text-4xl md:text-5xl font-extrabold text-white tracking-tighter">
+            Architected for <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-400 to-indigo-500 italic">Alpha.</span>
+          </h2>
+        </div>
+
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {coreNodes.map((node, i) => (
+            <div key={i} className="group relative p-8 border border-white/5 bg-white/[0.02] hover:bg-white/[0.05] transition-all duration-300"
+                 style={{ clipPath: 'polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px)' }}>
+              
+              <div className="absolute left-0 top-0 bottom-0 w-[2px] bg-brand-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+              
+              <div className="flex justify-between items-start mb-8">
+                <div className="w-12 h-12 bg-brand-500/10 border border-brand-500/30 flex items-center justify-center group-hover:border-brand-400 group-hover:shadow-[0_0_15px_rgba(31,149,201,0.3)] transition-all">
+                  <node.icon className="w-5 h-5 text-brand-400" />
                 </div>
-                <h3 className="text-xl font-bold text-white mb-4 text-center">{feature.title}</h3>
-                <p className="text-gray-300 text-center text-sm leading-relaxed">{feature.desc}</p>
+                <span className="text-[10px] font-mono text-brand-500/50 uppercase tracking-widest">{node.id}</span>
               </div>
+              
+              <h3 className="text-xl font-bold text-white mb-3 tracking-wide group-hover:text-brand-400 transition-colors">{node.title}</h3>
+              <p className="text-sm text-gray-400 font-light leading-relaxed">{node.desc}</p>
             </div>
           ))}
         </div>

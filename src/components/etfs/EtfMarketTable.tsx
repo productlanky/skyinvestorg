@@ -1,132 +1,140 @@
 "use client";
 
 import { useState } from 'react';
-import { Search, BarChart3, Database, Globe2, LayoutTemplate } from 'lucide-react';
+import { Search, Terminal, Activity, Layers } from 'lucide-react';
 import Link from 'next/link';
 
-const categories = [
-  { name: 'Index ETFs', desc: 'Track major market indices like S&P 500, NASDAQ, and Dow Jones', icon: BarChart3 },
-  { name: 'Sector ETFs', desc: 'Focus on specific sectors like Technology, Healthcare, and Energy', icon: Database },
-  { name: 'International ETFs', desc: 'Access global markets including emerging markets and developed economies', icon: Globe2 },
-  { name: 'Thematic ETFs', desc: 'Focus on specific themes like Clean Energy, AI, Cybersecurity, and more', icon: LayoutTemplate },
-];
-
 const etfData = [
-  { symbol: 'SPY', name: 'SPDR S&P 500 ETF', price: '$512.30', change: '+0.45%', aum: '$450B', spread: '0.02' },
-  { symbol: 'QQQ', name: 'Invesco QQQ Trust', price: '$445.15', change: '+1.12%', aum: '$230B', spread: '0.03' },
-  { symbol: 'VTI', name: 'Vanguard Total Stock', price: '$265.80', change: '+0.38%', aum: '$310B', spread: '0.02' },
-  { symbol: 'XLF', name: 'Financial Select Sector', price: '$41.20', change: '-0.15%', aum: '$38B', spread: '0.01' },
-  { symbol: 'XLK', name: 'Technology Select Sector', price: '$205.40', change: '+1.50%', aum: '$52B', spread: '0.02' },
-  { symbol: 'ARKK', name: 'Innovation ETF', price: '$48.90', change: '-2.10%', aum: '$8B', spread: '0.04' },
-  { symbol: 'EEM', name: 'Emerging Markets', price: '$42.15', change: '+0.80%', aum: '$28B', spread: '0.03' },
-  { symbol: 'GLD', name: 'SPDR Gold Trust', price: '$208.50', change: '+0.25%', aum: '$58B', spread: '0.02' },
+  { symbol: 'SPY', name: 'SPDR S&P 500', category: 'Broad Market', price: '512.30', change: '+0.85%', isUp: true, exp: '0.09%' },
+  { symbol: 'QQQ', name: 'Invesco QQQ Trust', category: 'Technology', price: '438.15', change: '+1.12%', isUp: true, exp: '0.20%' },
+  { symbol: 'VTI', name: 'Vanguard Total Stock', category: 'Broad Market', price: '254.80', change: '+0.75%', isUp: true, exp: '0.03%' },
+  { symbol: 'ARKK', name: 'ARK Innovation ETF', category: 'Thematic Tech', price: '48.90', change: '-1.40%', isUp: false, exp: '0.75%' },
+  { symbol: 'GLD', name: 'SPDR Gold Shares', category: 'Commodities', price: '202.40', change: '-0.45%', isUp: false, exp: '0.40%' },
+  { symbol: 'USO', name: 'United States Oil Fund', category: 'Commodities', price: '76.15', change: '+2.10%', isUp: true, exp: '0.60%' },
+  { symbol: 'XLF', name: 'Financial Select Sector', category: 'Financials', price: '41.20', change: '+0.30%', isUp: true, exp: '0.10%' },
+  { symbol: 'XLV', name: 'Health Care Select', category: 'Healthcare', price: '142.50', change: '-0.20%', isUp: false, exp: '0.10%' },
 ];
 
 export default function EtfMarketTable() {
   const [search, setSearch] = useState('');
 
   const filteredETFs = etfData.filter(etf => 
-    etf.symbol.toLowerCase().includes(search.toLowerCase()) ||
+    etf.symbol.toLowerCase().includes(search.toLowerCase()) || 
+    etf.category.toLowerCase().includes(search.toLowerCase()) ||
     etf.name.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
-    <section id="etf-markets" className="py-16 bg-gray-900">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="py-24 bg-[#05070a] relative overflow-hidden border-y border-white/5">
+      
+      <div className="absolute inset-0 opacity-[0.02] mix-blend-overlay pointer-events-none bg-[url('data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMjAwIDIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZmlsdGVyIGlkPSJub2lzZUZpbHRlciI+PGZlVHVyYnVsZW5jZSB0eXBlPSJmcmFjdGFsTm9pc2UiIGJhc2VGcmVxdWVuY3k9IjAuNjUiIG51bU9jdGF2ZXM9IjMiIHN0aXRjaFRpbGVzPSJzdGl0Y2giLz48L2ZpbHRlcj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWx0ZXI9InVybCgibm9pc2VGaWx0ZXIpIi8+PC9zdmc+')]"></div>
+
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
-        <div className="text-center mb-12">
-          <div className="inline-block px-3 py-1 mb-4 text-xs font-semibold tracking-wider text-blue-400 uppercase bg-blue-900/30 border border-blue-800/30 rounded-full">
-            Available ETFs
-          </div>
-          <h2 className="text-3xl font-extrabold text-white sm:text-4xl">
-            ETF Markets
-          </h2>
-          <p className="mt-4 text-xl text-gray-300 max-w-3xl mx-auto">
-            Trade a wide range of Exchange-Traded Funds with competitive spreads and advanced tools
-          </p>
-        </div>
-
-        {/* ETF Categories Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-          {categories.map((cat) => (
-            <div key={cat.name} className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl p-6 border border-gray-700 hover:border-blue-400 transition-all duration-300">
-              <div className="flex items-center mb-3">
-                <div className="w-10 h-10 bg-blue-600/20 rounded-lg flex items-center justify-center mr-3">
-                  <cat.icon className="w-5 h-5 text-blue-400" />
-                </div>
-                <h3 className="text-lg font-bold text-white">{cat.name}</h3>
-              </div>
-              <p className="text-gray-400 text-sm">{cat.desc}</p>
+        {/* Terminal Header */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 border-b border-white/10 pb-8">
+          <div>
+            <div className="inline-flex items-center space-x-3 mb-4">
+              <Terminal className="w-5 h-5 text-brand-500" />
+              <span className="text-[10px] font-mono font-bold uppercase tracking-[0.4em] text-brand-400">Asset_Class_Matrix</span>
             </div>
-          ))}
-        </div>
-
-        {/* Data Table */}
-        <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl border border-gray-700 overflow-hidden shadow-lg">
+            <h2 className="text-4xl md:text-5xl font-extrabold text-white tracking-tighter">
+              Exchange Traded <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-400 to-indigo-500 italic">Funds.</span>
+            </h2>
+          </div>
           
-          <div className="p-4 border-b border-gray-700 flex flex-col md:flex-row justify-between items-center gap-4">
-            <div className="relative w-full md:w-64">
-              <input 
-                type="text" 
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="w-full bg-gray-900 border border-gray-700 rounded-lg py-2 px-4 pl-10 text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500" 
-                placeholder="Search ETFs..." 
-              />
-              <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-500 pointer-events-none" />
+          {/* Command Line Search */}
+          <div className="mt-8 md:mt-0 w-full md:w-96 relative group">
+            <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
+              <span className="text-brand-500 font-mono font-bold animate-pulse">{'>'}</span>
             </div>
-            <div className="flex flex-wrap gap-2 w-full md:w-auto">
-              <select className="bg-gray-900 border border-gray-700 rounded-lg py-2 px-4 text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 flex-grow">
-                <option value="All">All ETFs</option>
-                <option value="Index">Index ETFs</option>
-                <option value="Sector">Sector ETFs</option>
-                <option value="International">International ETFs</option>
-                <option value="Thematic">Thematic ETFs</option>
-              </select>
-              <button className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-all duration-200">
-                Filter
-              </button>
-            </div>
+            <input 
+              type="text" 
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full bg-white/[0.02] border border-white/10 text-white font-mono text-sm py-4 pl-10 pr-4 focus:outline-none focus:border-brand-500 focus:bg-brand-500/5 transition-all uppercase placeholder:text-gray-600" 
+              placeholder="QUERY_TICKER_OR_THEME..." 
+              spellCheck="false"
+            />
+            <div className="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 border-brand-500/50"></div>
+          </div>
+        </div>
+
+        {/* Data Ledger */}
+        <div className="bg-[#0D1117]/80 border border-white/5 backdrop-blur-xl relative overflow-hidden"
+             style={{ clipPath: 'polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px)' }}>
+          
+          <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-brand-500/30 to-transparent"></div>
+          
+          <div className="flex items-center justify-between px-6 py-3 border-b border-white/5 bg-white/[0.01]">
+             <div className="flex items-center space-x-2">
+                <Activity className="w-3 h-3 text-brand-500" />
+                <span className="text-[9px] font-mono text-gray-500 uppercase tracking-widest">Live_Data_Feed_Active</span>
+             </div>
+             <span className="text-[9px] font-mono text-gray-600 uppercase tracking-widest">Results: {filteredETFs.length}</span>
           </div>
 
-          <div className="overflow-x-auto w-full max-h-[500px] overflow-y-auto">
-            <table className="w-full text-sm text-left text-gray-300 whitespace-nowrap">
-              <thead className="text-xs uppercase bg-gray-900 text-gray-400 sticky top-0 z-10 shadow-sm border-b border-gray-700">
-                <tr>
-                  <th className="px-6 py-4 font-semibold">Symbol</th>
-                  <th className="px-6 py-4 font-semibold">Name</th>
-                  <th className="px-6 py-4 font-semibold">Price</th>
-                  <th className="px-6 py-4 font-semibold">24h Change</th>
-                  <th className="px-6 py-4 font-semibold">AUM</th>
-                  <th className="px-6 py-4 font-semibold">Spread</th>
-                  <th className="px-6 py-4 font-semibold text-right">Action</th>
+          <div className="overflow-x-auto max-h-[600px] overflow-y-auto">
+            <table className="w-full text-left border-collapse">
+              <thead className="bg-[#0D1117] sticky top-0 z-10">
+                <tr className="border-b border-white/5">
+                  <th className="px-6 py-5 text-[10px] font-mono text-gray-600 uppercase tracking-widest">Fund Symbol</th>
+                  <th className="px-6 py-5 text-[10px] font-mono text-gray-600 uppercase tracking-widest">Fund Target</th>
+                  <th className="px-6 py-5 text-[10px] font-mono text-gray-600 uppercase tracking-widest">Market Price</th>
+                  <th className="px-6 py-5 text-[10px] font-mono text-gray-600 uppercase tracking-widest">24H Delta</th>
+                  <th className="px-6 py-5 text-[10px] font-mono text-gray-600 uppercase tracking-widest">Exp. Ratio</th>
+                  <th className="px-6 py-5 text-[10px] font-mono text-gray-600 uppercase tracking-widest text-right">Terminal Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-800 bg-gray-900">
+              <tbody className="divide-y divide-white/5">
                 {filteredETFs.map((etf) => (
-                  <tr key={etf.symbol} className="hover:bg-gray-800 transition-colors">
-                    <td className="px-6 py-4 font-bold text-blue-400">{etf.symbol}</td>
-                    <td className="px-6 py-4">{etf.name}</td>
-                    <td className="px-6 py-4 font-medium text-white">{etf.price}</td>
-                    <td className={`px-6 py-4 font-medium ${etf.change.startsWith('+') ? 'text-emerald-400' : 'text-red-400'}`}>
+                  <tr key={etf.symbol} className="group hover:bg-white/[0.03] transition-colors duration-200">
+                    <td className="px-6 py-4">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 rounded bg-white/5 border border-white/10 flex items-center justify-center group-hover:border-brand-500/30 transition-colors">
+                          <Layers className="w-4 h-4 text-brand-400" />
+                        </div>
+                        <span className="font-mono font-bold text-lg text-white tracking-tight group-hover:text-brand-400 transition-colors">
+                          {etf.symbol}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <p className="text-sm font-bold text-gray-200 tracking-wide">{etf.name}</p>
+                      <p className="text-[10px] font-mono text-gray-500 uppercase">{etf.category}</p>
+                    </td>
+                    <td className="px-6 py-4 font-mono text-white text-sm font-bold">
+                      ${etf.price}
+                    </td>
+                    <td className={`px-6 py-4 font-mono text-sm font-bold ${etf.isUp ? 'text-success-400' : 'text-error-400'}`}>
                       {etf.change}
                     </td>
-                    <td className="px-6 py-4 text-gray-400">{etf.aum}</td>
-                    <td className="px-6 py-4">{etf.spread}</td>
+                    <td className="px-6 py-4 font-mono text-gray-400 text-sm">
+                      {etf.exp}
+                    </td>
                     <td className="px-6 py-4 text-right">
-                      <Link href="/login" className="text-blue-500 hover:text-blue-400 font-medium">Trade</Link>
+                      <Link 
+                        href="/login" 
+                        className="inline-flex px-6 py-2 bg-brand-500/10 border border-brand-500/30 text-brand-400 hover:bg-brand-500 hover:text-white font-mono text-[10px] font-bold uppercase tracking-widest transition-all"
+                      >
+                        Execute
+                      </Link>
                     </td>
                   </tr>
                 ))}
+                
                 {filteredETFs.length === 0 && (
                   <tr>
-                    <td colSpan={7} className="px-6 py-8 text-center text-gray-500">No matching ETFs found</td>
+                    <td colSpan={6} className="px-6 py-20 text-center bg-white/[0.01]">
+                      <p className="text-brand-500/50 font-mono text-sm uppercase tracking-widest animate-pulse">
+                        ERR: 404 // FUND_NOT_FOUND IN DATABANK
+                      </p>
+                    </td>
                   </tr>
                 )}
               </tbody>
             </table>
           </div>
-
         </div>
       </div>
     </section>

@@ -1,47 +1,63 @@
+import Link from 'next/link';
+import { Terminal, ChevronRight, Network } from 'lucide-react';
+
 export default function AboutHero() {
   return (
-    <section className="relative overflow-hidden bg-gradient-to-br from-gray-900 to-gray-800">
-      {/* Abstract Background Elements */}
-      <div className="absolute inset-0 z-20 md:z-0 pointer-events-none">
-        <div className="absolute top-0 left-0 w-full h-full opacity-60 md:opacity-20">
-          <svg className="absolute top-0 left-0 w-full h-full" viewBox="0 0 800 800" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <linearGradient id="aboutGrad" x1="50%" x2="50%" y1="0%" y2="100%">
-                <stop stopColor="#3B82F6" stopOpacity=".25" offset="0%"></stop>
-                <stop stopColor="#10B981" stopOpacity=".2" offset="100%"></stop>
-              </linearGradient>
-            </defs>
-            <path fill="url(#aboutGrad)" d="M400,115 C515.46,115 615,214.54 615,330 C615,445.46 515.46,545 400,545 C284.54,545 185,445.46 185,330 C185,214.54 284.54,115 400,115 Z" transform="translate(0 -50)"></path>
-            <path fill="url(#aboutGrad)" d="M400,115 C515.46,115 615,214.54 615,330 C615,445.46 515.46,545 400,545 C284.54,545 185,445.46 185,330 C185,214.54 284.54,115 400,115 Z" transform="translate(350 150)"></path>
-          </svg>
-        </div>
-        <div className="absolute bottom-0 right-0 w-full h-full opacity-50 md:opacity-10">
-          <svg width="100%" height="100%" viewBox="0 0 800 800" xmlns="http://www.w3.org/2000/svg">
-            <g fill="none" stroke="#6366F1" strokeWidth="2">
-              <path d="M769 229L1037 260.9M927 880L731 737 520 660 309 538 40 599 295 764"></path>
-              <path d="M-4 44L190 190 731 737 520 660 309 538 40 599 295 764"></path>
-              <path d="M-4 44L190 190 731 737M490 85L309 538 40 599 295 764"></path>
-              <path d="M733 738L520 660M603 493L731 737M520 660L309 538"></path>
-            </g>
-          </svg>
-        </div>
+    <section className="relative w-full min-h-[75vh] bg-[#020305] overflow-hidden flex items-center pt-24 pb-16">
+      
+      {/* BRAND BACKGROUND & TEXTURES */}
+      <div className="absolute inset-0 pointer-events-none">
+        {/* Massive Ambient Glow - STRICTLY BRAND BLUE */}
+        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-brand-600/10 rounded-full blur-[150px] mix-blend-screen"></div>
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-brand-400/10 rounded-full blur-[150px] mix-blend-screen"></div>
+        
+        {/* CSS Grid Lines */}
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:3rem_3rem] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_50%,#000_70%,transparent_100%)]"></div>
       </div>
 
-      {/* Hero Content */}
-      <div className="relative z-10 px-4 py-16 mx-auto max-w-7xl sm:px-6 lg:px-8">
-        <div className="text-center mb-8">
-          <div className="inline-block px-3 py-1 mb-4 text-xs font-semibold tracking-wider text-blue-400 uppercase bg-blue-900/30 border border-blue-800/50 rounded-full">
-            Our Company
+      <div className="max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
+          
+          {/* LEFT: COPY & MODULES (7 Columns) */}
+          <div className="lg:col-span-8 space-y-10 relative">
+            
+            {/* System Path */}
+            <nav className="inline-flex items-center space-x-2 px-4 py-2 rounded-lg bg-white/[0.02] border border-white/5 backdrop-blur-md">
+              <Terminal className="w-4 h-4 text-brand-500" />
+              <div className="flex items-center text-[10px] font-mono text-gray-500 uppercase tracking-widest">
+                <Link href="/" className="hover:text-brand-400 transition-colors">SYS_ROOT</Link>
+                <ChevronRight className="w-3 h-3 mx-1 opacity-50" />
+                <span className="opacity-70">Corporate</span>
+                <ChevronRight className="w-3 h-3 mx-1 opacity-50" />
+                <span className="text-brand-400 font-bold shadow-brand-500">Manifesto</span>
+              </div>
+            </nav>
+
+            {/* Massive Typography */}
+            <div className="relative">
+              <h1 className="absolute -top-10 -left-4 text-[5rem] md:text-[9rem] font-black text-transparent opacity-5 select-none" style={{ WebkitTextStroke: '1px rgba(31, 149, 201, 0.5)' }}>
+                GENESIS
+              </h1>
+              
+              <h2 className="relative text-5xl md:text-7xl xl:text-[6rem] font-extrabold text-white leading-[0.95] tracking-tighter">
+                Democratizing <br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-400 via-brand-500 to-indigo-500 italic">
+                  Institutional Flow.
+                </span>
+              </h2>
+            </div>
+
+            <p className="text-lg md:text-xl text-gray-400 font-light leading-relaxed mt-2 border-l-2 border-brand-500 pl-6 max-w-3xl">
+              SkyInvestOrg was engineered by quantitative developers who recognized a critical flaw in the retail market: asymmetry. We built this firm to grant individual sovereign traders the exact same infrastructure, latency, and liquidity access as Tier-1 hedge funds.
+            </p>
+
+            {/* System Status Tag */}
+            <div className="inline-flex items-center space-x-3 px-4 py-2 border border-brand-500/30 bg-brand-500/10">
+              <Network className="w-4 h-4 text-brand-400" />
+              <span className="text-[10px] font-mono font-bold text-brand-400 uppercase tracking-[0.3em] animate-pulse">Infrastructure Online</span>
+            </div>
+
           </div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl md:text-5xl">
-            <span className="block">About SkyInvestOrg</span>
-            <span className="block mt-2 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-teal-400">
-              We make trading available for everybody
-            </span>
-          </h1>
-          <p className="max-w-2xl mt-5 mx-auto text-xl text-gray-300">
-            Discover our mission to become the world's most trusted trading platform through innovation, security, and exceptional service.
-          </p>
         </div>
       </div>
     </section>

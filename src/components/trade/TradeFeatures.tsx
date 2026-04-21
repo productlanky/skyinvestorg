@@ -1,62 +1,84 @@
-import { Zap, BrainCircuit, Eye, MousePointer2 } from 'lucide-react';
+import { BarChart4, Crosshair, Zap, Layers, Network, Monitor } from 'lucide-react';
 
 const features = [
   {
-    title: 'Reliable',
-    desc: "Featuring the market's sharpest execution, Shield Gold Signal Trade cTrader fills your orders in milliseconds without any requotes or price manipulation.",
-    icon: Zap,
-    gradient: 'from-blue-500/5 to-emerald-400/5',
-    hoverBorder: 'hover:border-blue-500/50',
-    iconColor: 'text-blue-400',
-    iconBg: 'bg-blue-500/10'
+    title: 'Advanced Charting Heuristics',
+    id: 'FEAT_01',
+    desc: 'Access over 80 pre-installed technical indicators, custom drawing tools, and multi-timeframe analysis directly within the browser environment.',
+    icon: BarChart4
   },
   {
-    title: 'Intelligent',
-    desc: "Make informed decisions with smart market analysis tools, Live Sentiment data and in-platform market insights from Trading Central.",
-    icon: BrainCircuit,
-    gradient: 'from-emerald-500/5 to-blue-400/5',
-    hoverBorder: 'hover:border-emerald-500/50',
-    iconColor: 'text-emerald-400',
-    iconBg: 'bg-emerald-500/10'
+    title: 'One-Click Execution',
+    id: 'FEAT_02',
+    desc: 'Bypass confirmation modals. Execute market orders, set limit parameters, and close positions instantly with a single click to capitalize on volatility.',
+    icon: Crosshair
   },
   {
-    title: 'Transparent',
-    desc: "Access transaction statistics, equity charts and detailed history of your deals for a crystal clear understanding of your performance.",
-    icon: Eye,
-    gradient: 'from-blue-500/5 to-emerald-400/5',
-    hoverBorder: 'hover:border-blue-500/50',
-    iconColor: 'text-blue-400',
-    iconBg: 'bg-blue-500/10'
+    title: 'Level II Market Depth',
+    id: 'FEAT_03',
+    desc: 'View real-time order book data and aggregated institutional liquidity pools to gauge market sentiment and pinpoint optimal entry blocks.',
+    icon: Layers
   },
   {
-    title: 'Intuitive',
-    desc: "Easy to use and navigate, Shield Gold Signal Trade cTrader was built with real traders' needs in mind. Trade with cTrader and experience its distinct advantage.",
-    icon: MousePointer2,
-    gradient: 'from-emerald-500/5 to-blue-400/5',
-    hoverBorder: 'hover:border-emerald-500/50',
-    iconColor: 'text-emerald-400',
-    iconBg: 'bg-emerald-500/10'
+    title: 'Direct Market Access (DMA)',
+    id: 'FEAT_04',
+    desc: 'Orders are routed straight to our Tier-1 liquidity providers via Equinix NY4 servers, ensuring raw spreads and absolute minimum slippage.',
+    icon: Network
+  },
+  {
+    title: 'Cross-Device Synchronization',
+    id: 'FEAT_05',
+    desc: 'Chart templates, watchlists, and active orders are synced instantly across your desktop browser, tablet, and mobile trading environments.',
+    icon: Monitor
+  },
+  {
+    title: 'Zero-Installation Framework',
+    id: 'FEAT_06',
+    desc: 'Deploy the full power of a sovereign trading terminal from any modern web browser without downloading heavy executable files or plugins.',
+    icon: Zap
   }
 ];
 
 export default function TradeFeatures() {
   return (
-    <section className="py-16 bg-gray-900">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+    <section className="py-24 bg-[#05070a] border-y border-white/5 relative overflow-hidden">
+      
+      {/* Background Depth */}
+      <div className="absolute top-1/2 right-0 -translate-y-1/2 w-[600px] h-[600px] bg-brand-600/5 rounded-full blur-[150px] pointer-events-none"></div>
+
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        
+        <div className="mb-16 border-b border-white/10 pb-8">
+          <div className="inline-flex items-center space-x-3 mb-4">
+            <Zap className="w-5 h-5 text-brand-500" />
+            <span className="text-[10px] font-mono font-bold uppercase tracking-[0.4em] text-brand-400">Terminal Capabilities</span>
+          </div>
+          <h2 className="text-4xl md:text-5xl font-extrabold text-white tracking-tighter">
+            System <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-400 to-brand-600 italic">Specifications.</span>
+          </h2>
+        </div>
+
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {features.map((feature, i) => (
-            <div key={i} className="group relative h-full">
-              <div className={`absolute inset-0 bg-gradient-to-br ${feature.gradient} rounded-xl transition-all duration-300 group-hover:scale-105`}></div>
-              <div className={`relative h-full p-6 bg-gray-800 rounded-xl border border-gray-700 transition-all duration-300 ${feature.hoverBorder}`}>
-                <div className={`w-16 h-16 mx-auto mb-4 ${feature.iconBg} rounded-xl flex items-center justify-center`}>
-                  <feature.icon className={`w-8 h-8 ${feature.iconColor}`} />
+            <div key={i} className="group relative p-8 border border-white/5 bg-white/[0.02] hover:bg-white/[0.05] transition-all duration-300"
+                 style={{ clipPath: 'polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px)' }}>
+              
+              {/* Neon Left Border on Hover */}
+              <div className="absolute left-0 top-0 bottom-0 w-[2px] bg-brand-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+              
+              <div className="flex justify-between items-start mb-8">
+                <div className="w-12 h-12 bg-brand-500/10 border border-brand-500/30 flex items-center justify-center group-hover:border-brand-400 group-hover:shadow-[0_0_15px_rgba(31,149,201,0.3)] transition-all">
+                  <feature.icon className="w-5 h-5 text-brand-400" />
                 </div>
-                <h3 className="text-xl font-bold text-white mb-3 text-center">{feature.title}</h3>
-                <p className="text-gray-300 text-center text-sm leading-relaxed">{feature.desc}</p>
+                <span className="text-[10px] font-mono text-gray-600 uppercase tracking-widest">{feature.id}</span>
               </div>
+              
+              <h3 className="text-xl font-bold text-white mb-3 tracking-wide group-hover:text-brand-400 transition-colors">{feature.title}</h3>
+              <p className="text-sm text-gray-400 font-light leading-relaxed">{feature.desc}</p>
             </div>
           ))}
         </div>
+
       </div>
     </section>
   );

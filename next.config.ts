@@ -2,8 +2,16 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
-    domains: ["nyc.cloud.appwrite.io"], // ✅ Add your Supabase domain here
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+        port: '',
+        pathname: '/**',
+      },
+    ],
   },
+  // Keep your existing webpack config if you need SVGs
   webpack(config) {
     config.module.rules.push({
       test: /\.svg$/,

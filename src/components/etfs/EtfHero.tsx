@@ -1,127 +1,127 @@
 import Link from 'next/link';
-import { Home, ChevronRight } from 'lucide-react';
+import { Terminal, ChevronRight, Layers, Activity } from 'lucide-react';
 
 export default function EtfHero() {
   return (
-    <section className="relative overflow-hidden bg-gradient-to-br from-gray-900 to-gray-800 py-24">
-      {/* Background Elements */}
-      <div className="absolute inset-0 z-0 pointer-events-none opacity-20">
-        <svg className="absolute top-0 right-0 w-full h-full" viewBox="0 0 800 800" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <linearGradient id="etfGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop stopColor="#3B82F6" stopOpacity=".25" offset="0%"></stop>
-              <stop stopColor="#10B981" stopOpacity=".2" offset="50%"></stop>
-              <stop stopColor="#6366F1" stopOpacity=".15" offset="100%"></stop>
-            </linearGradient>
-          </defs>
-          <path fill="url(#etfGrad1)" d="M50,250 L150,200 L250,300 L350,150 L450,250 L550,100 L650,200 L750,150" strokeWidth="3" stroke="rgba(59, 130, 246, 0.5)"></path>
-          <path fill="url(#etfGrad1)" d="M50,450 L750,450" strokeWidth="1" stroke="rgba(59, 130, 246, 0.2)"></path>
-          <path fill="url(#etfGrad1)" d="M50,350 L750,350" strokeWidth="1" stroke="rgba(59, 130, 246, 0.2)"></path>
-          <path fill="url(#etfGrad1)" d="M50,550 L750,550" strokeWidth="1" stroke="rgba(59, 130, 246, 0.2)"></path>
-        </svg>
+    <section className="relative w-full min-h-[85vh] bg-[#020305] overflow-hidden flex items-center pt-24 pb-16">
+      
+      {/* BRAND BACKGROUND & TEXTURES */}
+      <div className="absolute inset-0 pointer-events-none">
+        {/* Massive Ambient Glow - STRICTLY BRAND BLUE */}
+        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-brand-600/10 rounded-full blur-[150px] mix-blend-screen"></div>
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-brand-400/10 rounded-full blur-[150px] mix-blend-screen"></div>
+        
+        {/* CSS Grid Lines */}
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:3rem_3rem] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_50%,#000_70%,transparent_100%)]"></div>
       </div>
 
-      <div className="relative z-10 px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
-        <div className="flex flex-col lg:flex-row lg:items-center">
+      <div className="max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
           
-          {/* Text Content */}
-          <div className="w-full lg:w-2/3 mb-12 lg:mb-0 space-y-6">
-            <div className="inline-block px-3 py-1 mb-2 text-xs font-semibold tracking-wider text-blue-400 uppercase bg-blue-900/30 border border-blue-800/50 rounded-full">
-              Investment Products
-            </div>
+          {/* LEFT: COPY & MODULES (7 Columns) */}
+          <div className="lg:col-span-7 space-y-10 relative">
             
-            <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl md:text-6xl">
-              <span className="block">Exchange-Traded Funds</span>
-              <span className="block mt-2 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400">
-                Diversified Investment Solutions
-              </span>
-            </h1>
-            
-            <p className="mt-4 text-lg text-gray-300 max-w-2xl leading-relaxed">
-              An exchange-traded fund is a type of investment fund and exchange-traded product, i.e. they are traded on stock exchanges. ETFs are similar in many ways to mutual funds, except that ETFs are bought and sold throughout the day on stock exchanges while mutual funds are bought and sold based on their price at day's end.
-            </p>
-
-            <nav className="flex mt-6 mb-8" aria-label="Breadcrumb">
-              <ol className="inline-flex items-center space-x-1 md:space-x-3">
-                <li className="inline-flex items-center">
-                  <Link href="/" className="inline-flex items-center text-gray-400 hover:text-white transition-colors">
-                    <Home className="w-4 h-4 mr-2" />
-                    Shield Gold Signal
-                  </Link>
-                </li>
-                <li>
-                  <div className="flex items-center">
-                    <ChevronRight className="w-5 h-5 text-gray-400" />
-                    <span className="text-gray-400 ml-1 md:ml-2">Trading</span>
-                  </div>
-                </li>
-                <li>
-                  <div className="flex items-center">
-                    <ChevronRight className="w-5 h-5 text-gray-400" />
-                    <span className="text-gray-200 font-medium ml-1 md:ml-2">ETFs</span>
-                  </div>
-                </li>
-              </ol>
+            {/* System Path */}
+            <nav className="inline-flex items-center space-x-2 px-4 py-2 rounded-lg bg-white/[0.02] border border-white/5 backdrop-blur-md">
+              <Terminal className="w-4 h-4 text-brand-500" />
+              <div className="flex items-center text-[10px] font-mono text-gray-500 uppercase tracking-widest">
+                <Link href="/" className="hover:text-brand-400 transition-colors">SYS_ROOT</Link>
+                <ChevronRight className="w-3 h-3 mx-1 opacity-50" />
+                <span className="opacity-70">Trading</span>
+                <ChevronRight className="w-3 h-3 mx-1 opacity-50" />
+                <span className="text-brand-400 font-bold shadow-brand-500">ETF_Modules</span>
+              </div>
             </nav>
 
-            <div className="flex flex-wrap gap-4 mt-8">
-              <a href="#etf-markets" className="px-8 py-3 text-lg font-medium text-white bg-blue-600 rounded-lg shadow-lg hover:bg-blue-700 transition-all duration-200">
-                Explore ETFs
-              </a>
-              <Link href="/register" className="px-8 py-3 text-lg font-medium text-gray-300 bg-gray-800 border border-gray-700 rounded-lg shadow-lg hover:bg-gray-700 transition-all duration-200">
-                Start Trading
+            {/* Massive Typography */}
+            <div className="relative">
+              <h1 className="absolute -top-10 -left-4 text-[6rem] md:text-[10rem] font-black text-transparent opacity-5 select-none" style={{ WebkitTextStroke: '1px rgba(31, 149, 201, 0.5)' }}>
+                BASKETS
+              </h1>
+              
+              <h2 className="relative text-5xl md:text-7xl xl:text-[6rem] font-extrabold text-white leading-[0.95] tracking-tighter">
+                Thematic Asset <br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-400 via-brand-500 to-indigo-600 italic">
+                  Allocation.
+                </span>
+              </h2>
+            </div>
+
+            {/* Definition Data Module */}
+            <div className="relative p-6 border-l-2 border-brand-500 bg-brand-500/5 backdrop-blur-sm max-w-2xl"
+                 style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%)' }}>
+              <div className="absolute top-0 right-0 px-2 py-1 bg-brand-500/20 text-brand-400 text-[8px] font-mono uppercase tracking-widest">Asset_Class_Def</div>
+              <p className="text-lg text-gray-300 font-light leading-relaxed mt-2">
+                Exchange Traded Funds (ETFs) grant immediate, fractional exposure to broad market sectors, commodities, or specialized indices. Execute diversified macro-strategies through a single, highly liquid instrument.
+              </p>
+            </div>
+
+            {/* Action Matrix */}
+            <div className="flex flex-col sm:flex-row items-center gap-6 pt-4">
+              <Link 
+                href="/register" 
+                className="group relative flex items-center justify-center h-14 px-8 bg-brand-600 w-full sm:w-auto overflow-hidden shadow-[0_0_30px_rgba(31,149,201,0.2)] hover:bg-brand-500 transition-colors"
+                style={{ clipPath: 'polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px)' }}
+              >
+                <span className="relative z-10 text-xs font-black text-white uppercase tracking-widest flex items-center">
+                  Deploy Capital <Layers className="ml-3 w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                </span>
               </Link>
             </div>
           </div>
 
-          {/* Mini Cards */}
-          <div className="w-full lg:w-1/3 relative">
-            <div className="grid gap-4">
+          {/* RIGHT: ETF HUD (5 Columns) */}
+          <div className="lg:col-span-5 relative hidden lg:block">
+            
+            {/* Main Glass Panel */}
+            <div className="relative bg-[#0D1117]/80 border border-white/10 p-6 backdrop-blur-2xl shadow-[0_0_50px_rgba(0,0,0,0.5)] z-20"
+                 style={{ clipPath: 'polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px)' }}>
               
-              {/* S&P 500 ETF */}
-              <div className="bg-gray-800/50 backdrop-blur-sm p-4 rounded-xl border border-gray-700 hover:-translate-y-1 transition-all duration-300">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="text-lg font-bold text-white">S&amp;P 500 ETF</h3>
-                    <p className="text-sm text-gray-400">Tracks the S&amp;P 500 Index</p>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-green-400 font-medium">+1.2%</div>
-                    <div className="text-xs text-gray-400">Today</div>
-                  </div>
+              {/* Header */}
+              <div className="flex items-center justify-between border-b border-white/5 pb-4 mb-6">
+                <div className="flex items-center space-x-2">
+                  <Activity className="w-4 h-4 text-brand-400" />
+                  <span className="text-[10px] font-mono text-white uppercase tracking-[0.3em]">Live_Basket_Metrics</span>
                 </div>
-                <div className="mt-3 h-10">
-                  <svg className="w-full h-full" viewBox="0 0 100 30">
-                    <path d="M0,15 L10,12 L20,18 L30,15 L40,20 L50,14 L60,16 L70,10 L80,15 L90,13 L100,8" fill="none" stroke="#10B981" strokeWidth="2" />
-                  </svg>
-                </div>
+                <div className="w-1.5 h-1.5 rounded-full bg-brand-500 animate-ping"></div>
               </div>
 
-              {/* Tech ETF */}
-              <div className="bg-gray-800/50 backdrop-blur-sm p-4 rounded-xl border border-gray-700 hover:-translate-y-1 transition-all duration-300">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="text-lg font-bold text-white">Tech Sector ETF</h3>
-                    <p className="text-sm text-gray-400">Technology companies</p>
+              {/* Ticker List */}
+              <div className="space-y-4">
+                {[
+                  { symbol: 'SPY', name: 'S&P 500 Trust', price: '512.30', change: '+0.85%', aum: '$480B' },
+                  { symbol: 'QQQ', name: 'Invesco Trust Series 1', price: '438.15', change: '+1.12%', aum: '$235B' },
+                  { symbol: 'GLD', name: 'SPDR Gold Shares', price: '202.40', change: '-0.45%', aum: '$58B' }
+                ].map((etf, idx) => (
+                  <div key={idx} className="flex items-center justify-between p-3 border border-white/5 bg-white/[0.02] hover:bg-white/[0.05] hover:border-brand-500/30 transition-colors group">
+                    <div className="flex items-center space-x-4">
+                      <div className="w-10 h-10 rounded bg-white/5 flex items-center justify-center border border-white/10 group-hover:border-brand-500/50 transition-colors">
+                        <Layers className="w-4 h-4 text-brand-400" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-white tracking-wide">{etf.symbol}</p>
+                        <p className="text-[10px] font-mono text-gray-500 uppercase">{etf.name}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-mono font-bold text-white">${etf.price}</p>
+                      <p className={`text-[10px] font-mono ${etf.change.startsWith('+') ? 'text-success-400' : 'text-error-400'}`}>
+                        {etf.change}
+                      </p>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <div className="text-green-400 font-medium">+2.5%</div>
-                    <div className="text-xs text-gray-400">Today</div>
-                  </div>
-                </div>
-                <div className="mt-3 h-10">
-                  <svg className="w-full h-full" viewBox="0 0 100 30">
-                    <path d="M0,20 L10,18 L20,15 L30,16 L40,12 L50,10 L60,8 L70,5 L80,7 L90,3 L100,5" fill="none" stroke="#10B981" strokeWidth="2" />
-                  </svg>
-                </div>
+                ))}
               </div>
 
+              {/* Composition Tag */}
+              <div className="mt-6 pt-4 border-t border-white/5 flex items-center justify-between">
+                <span className="text-[9px] font-mono text-gray-500 uppercase tracking-widest">Routing: Aggregated</span>
+                <span className="text-[9px] font-mono text-brand-400 uppercase tracking-widest bg-brand-500/10 px-2 py-1 rounded">
+                  Fractional Allocation Enabled
+                </span>
+              </div>
             </div>
-            {/* Blurs */}
-            <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-blue-500/20 rounded-full filter blur-xl -z-10"></div>
-            <div className="absolute -top-6 -left-6 w-24 h-24 bg-purple-500/20 rounded-full filter blur-xl -z-10"></div>
           </div>
-
         </div>
       </div>
     </section>

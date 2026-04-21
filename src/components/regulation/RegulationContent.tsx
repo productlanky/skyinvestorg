@@ -1,45 +1,71 @@
-import { ShieldCheck, FileCheck } from 'lucide-react';
+import { ShieldAlert, Scale, FileText, CheckCircle2 } from 'lucide-react';
+
+const securityProtocols = [
+  {
+    title: 'Tier-1 Fund Segregation',
+    id: 'SEC_01',
+    desc: 'Client funds are entirely segregated from company operational capital. We partner exclusively with Tier-1 global banking institutions to hold client deposits, ensuring they cannot be used to offset corporate liabilities.',
+    icon: Scale
+  },
+  {
+    title: 'Negative Balance Protection',
+    id: 'SEC_02',
+    desc: 'Our risk-management engine automatically liquidates positions before they exceed your account equity. Under no circumstances will you owe the firm more capital than you initially deposited.',
+    icon: ShieldAlert
+  },
+  {
+    title: 'Cold Storage Custody',
+    id: 'SEC_03',
+    desc: 'For digital assets, 98% of client funds are kept offline in air-gapped cold storage. These vaults require multi-signature cryptographic authorization distributed across distinct geographic zones.',
+    icon: FileText
+  }
+];
 
 export default function RegulationContent() {
   return (
-    <section className="py-16 bg-gray-900">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="py-24 bg-[#05070a] border-y border-white/5 relative overflow-hidden">
+      
+      {/* Background Depth */}
+      <div className="absolute top-1/2 right-0 -translate-y-1/2 w-[600px] h-[600px] bg-amber-600/5 rounded-full blur-[150px] pointer-events-none"></div>
+
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
-        {/* Main Content Box */}
-        <div className="bg-gray-800/50 backdrop-filter backdrop-blur-sm rounded-xl p-8 border border-gray-700 shadow-xl">
-          <div className="space-y-8">
-            
-            {/* Entity 1: FSA */}
-            <div className="flex items-start space-x-4">
-              <div className="flex-shrink-0">
-                <div className="w-12 h-12 rounded-full bg-blue-900/50 flex items-center justify-center border border-blue-500/20">
-                  <ShieldCheck className="w-6 h-6 text-blue-400" />
-                </div>
-              </div>
-              <div className="pt-2">
-                <p className="text-gray-300 leading-relaxed text-lg">
-                  <span className="font-semibold text-white">Shield Gold Signal</span> with registration number 709718501 is a company registered under the Laws of Seychelles and is licensed by the <span className="text-blue-400">Financial Services Authority (FSA)</span> of Seychelles.
-                </p>
-              </div>
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 border-b border-white/10 pb-8">
+          <div>
+            <div className="inline-flex items-center space-x-3 mb-4">
+              <Scale className="w-5 h-5 text-amber-500" />
+              <span className="text-[10px] font-mono font-bold uppercase tracking-[0.4em] text-amber-400">Core Directives</span>
             </div>
-
-            <div className="h-px w-full bg-gray-700/50"></div>
-
-            {/* Entity 2: CySEC */}
-            <div className="flex items-start space-x-4">
-              <div className="flex-shrink-0">
-                <div className="w-12 h-12 rounded-full bg-emerald-900/50 flex items-center justify-center border border-emerald-500/20">
-                  <FileCheck className="w-6 h-6 text-emerald-400" />
-                </div>
-              </div>
-              <div className="pt-2">
-                <p className="text-gray-300 leading-relaxed text-lg">
-                  Shield Gold Signal is a tradename of Shield Gold Signal with registration number HE 19818009, which is registered as a Cyprus Investment Firm (CIF) and licensed by the <span className="text-emerald-400">Cyprus Securities and Exchange Commission (CySEC)</span> in accordance with the Markets In Financial Instruments Directive (MiFID II).
-                </p>
-              </div>
-            </div>
-
+            <h2 className="text-4xl md:text-5xl font-extrabold text-white tracking-tighter">
+              Operational <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-yellow-600 italic">Integrity.</span>
+            </h2>
           </div>
+        </div>
+
+        <div className="grid lg:grid-cols-3 gap-8">
+          {securityProtocols.map((protocol, i) => (
+            <div key={i} className="group relative p-8 border border-white/5 bg-white/[0.02] hover:bg-white/[0.04] transition-all duration-300"
+                 style={{ clipPath: 'polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px)' }}>
+              
+              {/* Neon Top Border on Hover */}
+              <div className="absolute left-0 top-0 right-0 h-[2px] bg-amber-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+              
+              <div className="flex justify-between items-start mb-8">
+                <div className="w-12 h-12 bg-amber-500/10 border border-amber-500/30 flex items-center justify-center group-hover:shadow-[0_0_20px_rgba(245,158,11,0.2)] transition-all">
+                  <protocol.icon className="w-5 h-5 text-amber-400" />
+                </div>
+                <span className="text-[10px] font-mono text-gray-600 uppercase tracking-widest">{protocol.id}</span>
+              </div>
+              
+              <h3 className="text-xl font-bold text-white mb-4 tracking-wide">{protocol.title}</h3>
+              <p className="text-sm text-gray-400 font-light leading-relaxed mb-6">{protocol.desc}</p>
+              
+              <div className="flex items-center space-x-2 text-[10px] font-mono text-success-400 uppercase tracking-widest">
+                <CheckCircle2 className="w-3 h-3" />
+                <span>Protocol Active</span>
+              </div>
+            </div>
+          ))}
         </div>
 
       </div>

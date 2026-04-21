@@ -1,55 +1,90 @@
 import Link from 'next/link';
+import { Terminal, ArrowRight, ShieldAlert, BarChart4 } from 'lucide-react';
 
 export default function IndicesCTA() {
   return (
-    <section className="py-16 bg-gray-900 relative">
-      <div className="absolute inset-0 bg-gradient-to-r from-blue-900 to-gray-900 opacity-50 pointer-events-none"></div>
+    <section className="py-32 bg-[#020305] relative overflow-hidden">
       
-      {/* SVG Wave */}
-      <div className="absolute bottom-0 left-0 right-0 pointer-events-none">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320" className="w-full h-auto">
-          <path fill="#111827" fillOpacity="1" d="M0,224L40,213.3C80,203,160,181,240,181.3C320,181,400,203,480,218.7C560,235,640,245,720,229.3C800,213,880,171,960,165.3C1040,160,1120,192,1200,192C1280,192,1360,160,1400,144L1440,128L1440,320L1400,320C1360,320,1280,320,1200,320C1120,320,1040,320,960,320C880,320,800,320,720,320C640,320,560,320,480,320C400,320,320,320,240,320C160,320,80,320,40,320L0,320Z"></path>
-        </svg>
-      </div>
+      {/* Abstract Grid & Depth */}
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:3rem_3rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] pointer-events-none"></div>
+      
+      {/* Core Glow (Amethyst/Purple Theme) */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[300px] bg-purple-600/20 rounded-[100%] blur-[120px] pointer-events-none mix-blend-screen"></div>
 
-      <div className="container mx-auto px-4 relative z-10 max-w-7xl sm:px-6 lg:px-8">
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-blue-600 to-indigo-600 shadow-2xl">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        
+        {/* The Deployment Console */}
+        <div className="relative group">
+          {/* Animated Border Glow */}
+          <div className="absolute -inset-[1px] bg-gradient-to-r from-purple-500/0 via-purple-500 to-purple-500/0 opacity-30 group-hover:opacity-100 transition-opacity duration-1000"
+               style={{ clipPath: 'polygon(30px 0, 100% 0, 100% calc(100% - 30px), calc(100% - 30px) 100%, 0 100%, 0 30px)' }}></div>
           
-          {/* Dot Patterns */}
-          <div className="absolute inset-0 overflow-hidden opacity-20 pointer-events-none">
-            <svg className="absolute bottom-0 left-0 transform translate-y-1/2 -translate-x-1/2" width="800" height="800" fill="none" viewBox="0 0 400 400">
-              <defs>
-                <pattern id="cta-dots" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
-                  <rect x="0" y="0" width="4" height="4" fill="currentColor"></rect>
-                </pattern>
-              </defs>
-              <rect width="800" height="800" fill="url(#cta-dots)"></rect>
-            </svg>
-          </div>
-
-          <div className="relative px-6 py-16 sm:py-20 sm:px-12 lg:px-16 flex flex-col md:flex-row items-center">
+          <div className="relative bg-[#0D1117]/90 backdrop-blur-2xl p-8 md:p-16 flex flex-col items-center text-center shadow-2xl"
+               style={{ clipPath: 'polygon(30px 0, 100% 0, 100% calc(100% - 30px), calc(100% - 30px) 100%, 0 100%, 0 30px)' }}>
             
-            <div className="md:w-1/2 md:pr-10 text-center md:text-left mb-10 md:mb-0">
-              <span className="text-sm font-bold text-blue-200 uppercase tracking-wider mb-2 block">Start Trading Today</span>
-              <h2 className="text-3xl leading-tight font-extrabold text-white sm:text-4xl mb-4">
-                Ready to Trade Indices?
+            {/* Top HUD Bar */}
+            <div className="absolute top-0 left-0 w-full flex justify-between px-8 py-3 border-b border-white/5 bg-white/[0.01]">
+              <div className="flex items-center space-x-2">
+                <BarChart4 className="w-3 h-3 text-purple-500" />
+                <span className="text-[9px] font-mono text-gray-500 uppercase tracking-[0.3em]">Module_Macro_Deploy</span>
+              </div>
+              <div className="flex space-x-1">
+                <div className="w-4 h-1 bg-purple-500/30"></div>
+                <div className="w-4 h-1 bg-purple-500/60"></div>
+                <div className="w-4 h-1 bg-purple-500"></div>
+              </div>
+            </div>
+
+            {/* Content Area */}
+            <div className="mt-8 relative w-full max-w-3xl">
+              
+              <div className="inline-flex items-center space-x-3 mb-6 px-4 py-2 border border-purple-500/30 bg-purple-500/10">
+                <Terminal className="w-4 h-4 text-purple-400" />
+                <span className="text-[10px] font-mono font-bold text-purple-400 uppercase tracking-[0.3em] animate-pulse">System Ready</span>
+              </div>
+              
+              <h2 className="text-4xl md:text-6xl font-black text-white tracking-tighter uppercase leading-[0.95] mb-6">
+                Execute Macro <br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-indigo-400 italic">Strategy.</span>
               </h2>
-              <p className="text-lg text-blue-100 leading-relaxed">
-                Join thousands of traders worldwide who trade global indices on our platform. Get started with a free demo account or open a real trading account today.
+              
+              <p className="text-lg md:text-xl text-gray-400 font-light max-w-2xl mx-auto mb-10 leading-relaxed">
+                Gain frictionless exposure to the world&apos;s leading economies. Initialize a risk-free simulation or deploy live capital directly into global sector benchmarks.
               </p>
-            </div>
-            
-            <div className="md:w-1/2 flex flex-col sm:flex-row justify-center md:justify-end gap-4 w-full">
-              <Link href="/register" className="inline-flex justify-center items-center px-8 py-4 border border-transparent text-base font-bold rounded-lg shadow-lg text-indigo-600 bg-white hover:bg-gray-100 transition-colors whitespace-nowrap">
-                Create Account
-              </Link>
-              <Link href="/register" className="inline-flex justify-center items-center px-8 py-4 border-2 border-white/30 text-base font-bold rounded-lg text-white bg-indigo-800/40 hover:bg-indigo-800/60 shadow-lg transition-colors whitespace-nowrap">
-                Try Demo
-              </Link>
-            </div>
 
+              {/* Action Buttons Matrix */}
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
+                <Link 
+                  href="/register" 
+                  className="group relative flex items-center justify-center h-16 px-10 bg-purple-600 w-full sm:w-auto overflow-hidden hover:bg-purple-500 transition-colors shadow-[0_0_40px_rgba(168,85,247,0.3)]"
+                  style={{ clipPath: 'polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px)' }}
+                >
+                  <span className="relative z-10 text-sm font-black text-white uppercase tracking-widest flex items-center">
+                    Initialize Live Account <ArrowRight className="ml-3 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  </span>
+                </Link>
+                
+                <Link 
+                  href="/register" 
+                  className="group flex items-center justify-center h-16 px-10 bg-white/[0.02] border border-white/10 hover:border-purple-500/50 hover:bg-purple-500/5 w-full sm:w-auto transition-colors"
+                  style={{ clipPath: 'polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px)' }}
+                >
+                  <span className="text-sm font-bold text-gray-300 group-hover:text-white uppercase tracking-widest transition-colors">
+                    Access Simulation Sandbox
+                  </span>
+                </Link>
+              </div>
+
+              {/* Security Warning Footer */}
+              <div className="mt-12 flex items-center justify-center space-x-2 text-[9px] font-mono text-gray-600 uppercase tracking-widest">
+                <ShieldAlert className="w-3 h-3 text-purple-500/50" />
+                <span>Encrypted Connection // Level-3 Verification Required for Withdrawal</span>
+              </div>
+
+            </div>
           </div>
         </div>
+
       </div>
     </section>
   );

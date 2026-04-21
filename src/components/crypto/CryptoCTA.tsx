@@ -2,38 +2,28 @@ import Link from 'next/link';
 
 export default function CryptoCTA() {
   return (
-    <section className="py-16 bg-gray-900">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-gradient-to-r from-blue-900 to-blue-800 rounded-2xl overflow-hidden shadow-xl border border-blue-700/50">
-          <div className="relative px-8 py-12 md:p-12 lg:px-16 lg:py-16">
-            
-            {/* Background SVG lines */}
-            <div className="absolute inset-0 overflow-hidden opacity-10 pointer-events-none">
-              <svg className="absolute right-0 top-0 h-full w-full" preserveAspectRatio="none" viewBox="0 0 800 800">
-                <path fill="none" stroke="white" strokeWidth="2" d="M769 229L1037 260.9M927 880L731 737 520 660 309 538 40 599 295 764" />
-                <path fill="none" stroke="white" strokeWidth="2" d="M-4 44L190 190 731 737 520 660 309 538 40 599 295 764" />
-              </svg>
-            </div>
-
-            {/* Content */}
-            <div className="relative z-10 text-center max-w-3xl mx-auto">
-              <h2 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
-                Ready to Start Trading Cryptocurrencies?
-              </h2>
-              <p className="mt-4 text-xl text-blue-100">
-                Join thousands of traders using our platform to trade cryptocurrencies and other assets.
-              </p>
-              <div className="mt-10 flex flex-wrap justify-center gap-4">
-                <Link href="/register" className="px-8 py-4 text-base font-bold text-blue-900 bg-white rounded-lg shadow-lg hover:bg-gray-100 transition-colors">
-                  Create Free Account
-                </Link>
-                <Link href="/login" className="px-8 py-4 text-base font-bold text-white bg-transparent border-2 border-white rounded-lg shadow-lg hover:bg-white/10 transition-colors">
-                  Login to Platform
-                </Link>
-              </div>
-            </div>
-
+    <section className="py-24 bg-[#05070a] relative overflow-hidden">
+      <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iLjMiPjxwYXRoIGQ9Ik0zNiAzNGhLTJWMjRoMnpNNDAgMjRoLTJ2MTBoMnpNNDQgMjRoLTJ2MTBoMnoiLz48L2c+PC9nPjwvc3ZnPg==')]"></div>
+      
+      <div className="max-w-7xl mx-auto px-6 relative z-10 text-center">
+        <div className="max-w-3xl mx-auto">
+          <h2 className="text-4xl md:text-6xl font-extrabold text-white tracking-tighter leading-none mb-8">
+            The Digital Frontier <br /> <span className="text-brand-500 italic">Is Open.</span>
+          </h2>
+          <p className="text-xl text-gray-400 font-light mb-12">
+            Join thousands of traders executing Bitcoin and Ethereum trades with sub-millisecond precision. Start your sovereign journey today.
+          </p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
+            <Link href="/register" className="w-full sm:w-auto px-10 py-5 bg-brand-600 hover:bg-brand-500 text-white font-black uppercase tracking-widest text-xs rounded-full shadow-2xl shadow-brand-500/20 transition-all transform hover:-translate-y-1">
+              Start Trading Cryptocurrencies
+            </Link>
+            <Link href="/contact" className="w-full sm:w-auto px-10 py-5 bg-white/5 border border-white/10 text-white font-black uppercase tracking-widest text-xs rounded-full hover:bg-white/10 transition-all">
+              Request VIP Support
+            </Link>
           </div>
+          <p className="mt-12 text-[9px] font-mono text-gray-600 uppercase tracking-[0.4em]">
+            Institutional Grade // AES-256 Encrypted // 24/7 Monitoring
+          </p>
         </div>
       </div>
     </section>

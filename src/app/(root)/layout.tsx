@@ -1,4 +1,4 @@
-import { StickyBottomTicker, TopTicker } from '@/components/home/Tickers';
+import { StickyBottomTicker } from '@/components/home/Tickers';
 import Footer from '@/components/layout/Footer';
 import Header from '@/components/layout/Header';
 import type { Metadata } from 'next';
@@ -41,7 +41,6 @@ export default function RootLayout({
                     Skip to main content
                 </a>
                 <Header />
-                <TopTicker />
 
                 {children}
                 <Footer />

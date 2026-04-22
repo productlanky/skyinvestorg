@@ -4,109 +4,93 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { validate as validateBitcoin } from "bitcoin-address-validation";
+import { useRouter } from "next/navigation";
+import { 
+  ShieldAlert, 
+  Activity, 
+  Wallet, 
+  ArrowUpRight, 
+  LineChart, 
+  ShieldCheck
+} from "lucide-react";
+
+// --- COMPONENTS ---
 import WithdrawAlert from "./WithdrawAlert";
 import WithdrawForm, { WithdrawFormFields } from "./WithdrawForm";
-import { fetchTeslaPrice, getUser } from "@/lib/appwrite/auth";
-import { databases, DB_ID, NOTIFICATION_COLLECTION, PROFILE_COLLECTION_ID, STOCKLOG_COLLECTION_ID, TRANSACTION_COLLECTION } from "@/lib/appwrite/client";
-import { ID, Query } from "appwrite";
 import { Skeleton } from "../ui/skeleton";
-import { useRouter } from "next/navigation";
 
-
-type Tier = {
-    level: string;
-    min_referrals: number;
-    deposit_required: number;
-};
+// --- FIREBASE & UTILS ---
+import { auth, db } from "@/lib/firebase/config";
+import { onAuthStateChanged } from "firebase/auth";
+import { 
+  doc, onSnapshot, collection, query, where, getDocs, 
+  serverTimestamp, writeBatch 
+} from "firebase/firestore";
+import { fetchTeslaPrice } from "@/lib/appwrite/auth";
 
 type Profile = {
-    id: string;
-    profileId: string;
-    balance: number;
-    profit: number;
-    withdrawal_password?: string;
+    uid: string;
     totalDeposit: number;
-    tiers?: Tier[];
-    kycStatus?: string; // Added for KYC status
+    profit: number;
+    withdrawalPassword?: string;
+    kycStatus?: string;
+    withdrawalLimit: number;
+    balance?: number; // Legacy support
 };
 
 export default function WithdrawPage() {
     const [profile, setProfile] = useState<Profile | null>(null);
-    const [maxWithdrawAmount, setMaxWithdrawAmount] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
-    const [totalShares, setTotalShare] = useState<number | null>(0);
-    const [sharePrice, setSharePrice] = useState(0)
+    const [totalShares, setTotalShares] = useState<number>(0);
+    const [sharePrice, setSharePrice] = useState(0);
 
     const router = useRouter();
-    const {
-        reset,
-    } = useForm<WithdrawFormFields>({
-        defaultValues: {
-            method: "BTC",
-        },
-    });
 
     useEffect(() => {
+        // Fetch Live Market Data for Asset Valuation
+        fetchTeslaPrice().then(price => setSharePrice(parseFloat(price)));
 
-        fetchTeslaPrice().then(price => {
-            setSharePrice(parseFloat(price));
-            console.log("Tesla Stock Price:", price);
+        const unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
+            if (!user) return;
+
+            // 1. Setup Real-time Profile Listener
+            const unsubProfile = onSnapshot(doc(db, "profiles", user.uid), (docSnap) => {
+                if (docSnap.exists()) {
+                    const pData = docSnap.data();
+                    setProfile({
+                        uid: user.uid,
+                        totalDeposit: pData.totalDeposit || 0,
+                        profit: pData.profit || 0,
+                        balance: pData.balance || 0, // Legacy field
+                        withdrawalPassword: pData.withdrawalPassword,
+                        kycStatus: pData.kycStatus || "pending",
+                        withdrawalLimit: pData.withdrawalLimit || 0
+                    });
+                }
+            });
+
+            // 2. Fetch Stock Logs for Asset Calculation (Non-realtime is fine here)
+            const stockQuery = query(collection(db, "stockLogs"), where("userId", "==", user.uid));
+            const stockSnap = await getDocs(stockQuery);
+            const shares = stockSnap.docs.reduce((sum, doc) => {
+                const d = doc.data();
+                return d.type === 'buy' ? sum + (d.shares || 0) : sum - (d.shares || 0);
+            }, 0);
+            
+            setTotalShares(shares);
+            setIsLoading(false);
+
+            return () => unsubProfile();
         });
 
-        (async () => {
-            try {
-                // 1️⃣ Get logged-in user
-                const user = await getUser();
-                if (!user) return;
-
-                // 2️⃣ Fetch profile (with tier info)
-                const profileRes = await databases.listDocuments(
-                    DB_ID,
-                    PROFILE_COLLECTION_ID,
-                    [Query.equal("userId", user.$id)]
-                );
-
-                if (!profileRes.documents.length) {
-                    toast.error("Failed to load profile.");
-                    console.log("Profile not found");
-                    return;
-                }
-
-                const profileData = profileRes.documents[0];
-                const mappedProfile: Profile = {
-                    id: user.$id,
-                    profileId: profileData.$id,
-                    balance: profileData.balance,
-                    totalDeposit: profileData.totalDeposit,
-                    withdrawal_password: profileData.withdrawalPassword,
-                    tiers: profileData.tierLevel,
-                    kycStatus: profileData.kycStatus,
-                    profit: profileData.profit
-                };
-                setProfile(mappedProfile);
-
-                console.log("Profile loaded:", mappedProfile);
-                setMaxWithdrawAmount(profileData.withdrawalLimit);
-
-                // Get all transactions for the current user
-                const { documents } = await databases.listDocuments(DB_ID, STOCKLOG_COLLECTION_ID, [
-                    Query.equal("userId", user.$id)
-                ]);
-
-                // Sum quantities (positive for buys, negative for sells)
-                const totalShare = documents.reduce((sum, tx) => sum + (tx.shares || 0), 0) || 0;
-
-                setTotalShare(totalShare)
-
-                setIsLoading(false);
-
-            } catch (error) {
-                console.error("Error loading profile/KYC:", error);
-                toast.error("Failed to load profile.");
-            }
-        })();
+        return () => unsubscribeAuth();
     }, []);
 
+    // --- DERIVED LIQUIDITY METRICS ---
+    // Matches the rest of your app's logic
+    const currentDeposit = profile?.totalDeposit !== undefined ? Number(profile.totalDeposit) : Number(profile?.balance || 0);
+    const currentProfit = Number(profile?.profit || 0);
+    const availableLiquidity = currentDeposit + currentProfit;
 
     const validateAddress = (crypto: string, address: string) => {
         if (crypto === "BTC") return validateBitcoin(address);
@@ -117,107 +101,163 @@ export default function WithdrawPage() {
     const onSubmit = async (data: WithdrawFormFields) => {
         if (!profile || isLoading) return;
 
-        // ✅ Validation checks
+        // Security Protocols
         if (profile.kycStatus !== "approved") {
-            toast.error("KYC not approved.");
+            toast.error("KYC_UNAUTHORIZED: Verification required.");
             return;
         }
 
-        if (data.method === 'BTC' && !data.address || data.method === 'BTC' && !validateAddress(data.method, data.address ? data.address : "")) {
-            toast.error("Invalid crypto address.");
+        if (data.method === 'BTC' && (!data.address || !validateAddress("BTC", data.address))) {
+            toast.error("INVALID_COORDINATES: BTC address check failed.");
             return;
         }
 
-        if (!profile.withdrawal_password) {
-            toast.error("You must set a withdrawal password in your profile.");
+        if (!profile.withdrawalPassword) {
+            toast.error("SECURITY_VOID: Set withdrawal key in profile.");
             return;
         }
 
-        if (data.password !== profile.withdrawal_password) {
-            toast.error("Incorrect withdrawal password.");
+        if (data.password !== profile.withdrawalPassword) {
+            toast.error("ACCESS_DENIED: Incorrect security key.");
             return;
         }
 
-        if (data.amount > (profile.totalDeposit + profile.profit + ((totalShares || 0) * sharePrice))) {
-            const maxAmount = profile.totalDeposit + profile.profit + ((totalShares || 0) * sharePrice);
-            toast.error(`Insufficient funds. Your maximum available amount is $${maxAmount.toFixed(2)}.`);
+        const withdrawAmount = Number(data.amount);
+
+        // Limit Checks
+        if (withdrawAmount > availableLiquidity) {
+            toast.error(`LIMIT_ERR: Extraction exceeds liquid nodes ($${availableLiquidity.toFixed(2)})`);
             return;
         }
 
-        if (data.amount > maxWithdrawAmount) {
-            toast.error(`Limit exceeded. Max allowed: $${maxWithdrawAmount}`);
+        if (withdrawAmount > profile.withdrawalLimit) {
+            toast.error(`TIER_RESTRICTION: Max withdraw is $${profile.withdrawalLimit}`);
             return;
         }
 
         try {
-            // 1️⃣ Insert withdrawal transaction
-            await databases.createDocument(
-                DB_ID,
-                TRANSACTION_COLLECTION,
-                ID.unique(),
-                {
-                    userId: profile.id,
-                    type: 'withdrawal',
-                    method: data.method,
-                    amount: parseFloat(data.amount.toString()),
-                    status: "pending",
+            setIsLoading(true);
+            const batch = writeBatch(db);
+
+            // --- REVERSE SIPHONING PROTOCOL: PROFIT FIRST ---
+            let newProfit = currentProfit;
+            let newDeposit = currentDeposit;
+
+            if (newProfit >= withdrawAmount) {
+                // Profit covers the entire withdrawal
+                newProfit -= withdrawAmount;
+            } else {
+                // Profit exhausted, take remainder from deposit
+                const remainder = withdrawAmount - newProfit;
+                newProfit = 0;
+                newDeposit -= remainder;
+            }
+
+            // 1. Log Withdrawal Transaction (Pending status)
+            const txRef = doc(collection(db, "transactions"));
+            batch.set(txRef, {
+                userId: profile.uid,
+                type: 'capital_extraction',
+                category: 'withdrawal',
+                method: data.method,
+                amount: withdrawAmount,
+                status: "pending",
+                createdAt: serverTimestamp(),
+                metadata: {
+                    address: data.address,
+                    source: "profit_priority_routing"
                 }
-            );
-
-            // 2️⃣ Insert notification
-            await databases.createDocument(
-                DB_ID,
-                NOTIFICATION_COLLECTION,
-                ID.unique(),
-                {
-                    userId: profile.id,
-                    title: "Withdrawal Placed",
-                    message:
-                        "Your withdrawal was submitted successfully and will be processed within 4 working days.",
-                    type: "withdrawal",
-                }
-            );
-
-            const UserProfileId = profile.profileId;
-
-            // 3️⃣ Update user profile balance
-            await databases.updateDocument(
-                DB_ID,
-                PROFILE_COLLECTION_ID,
-                UserProfileId, {
-                balance: profile.balance - data.amount,
             });
 
-            toast.success("Withdrawal submitted.");
+            // 2. Dispatch System Notification
+            const notifRef = doc(collection(db, "notifications"));
+            batch.set(notifRef, {
+                userId: profile.uid,
+                title: "Withdrawal Initialized",
+                message: `Extraction of $${withdrawAmount} is in the clearing cycle.`,
+                type: "withdrawal",
+                read: false,
+                createdAt: serverTimestamp(),
+            });
+
+            // 3. Update Balance Nodes (Siphoned math)
+            const profileRef = doc(db, "profiles", profile.uid);
+            batch.update(profileRef, {
+                totalDeposit: newDeposit,
+                profit: newProfit,
+                lastWithdrawalAt: serverTimestamp()
+            });
+
+            await batch.commit();
+
+            toast.success("DISPATCH_SUCCESS: Funds routed to clearing network.");
             router.push('/transactions');
-            reset();
         } catch (error) {
-            console.error("Withdrawal error:", error);
-            toast.error("Withdrawal failed.");
+            console.error("Execution Error:", error);
+            toast.error("TERMINAL_EXECUTION_FAILURE");
+        } finally {
+            setIsLoading(false);
         }
     };
 
-
     return (
-        <div>
-            <h2 className="text-xl font-bold mb-4">Withdraw Funds</h2>
-            <div className="mx-auto p-6 border border-gray-200 dark:border-gray-800 rounded-2xl bg-white dark:bg-white/[0.03]">
-                {!isLoading ?
-                    <>
+        <div className="max-w-4xl mx-auto space-y-6 pb-20 animate-in fade-in duration-500">
+            {/* Page Header */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 bg-white dark:bg-[#0D1117] border border-slate-200 dark:border-white/5 relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-2 bg-brand-500/5 text-[8px] font-mono text-brand-500 border-l border-b border-white/5 uppercase tracking-widest">EXIT_PROTOCOL_V2</div>
+                <div className="flex items-center gap-4">
+                    <div className="p-3 border border-brand-500/20 bg-brand-500/5">
+                        <ArrowUpRight className="text-brand-500" size={24} />
+                    </div>
+                    <div>
+                        <h1 className="text-xl font-black uppercase tracking-widest text-slate-900 dark:text-white">Capital Outflow</h1>
+                        <p className="text-[10px] font-mono text-slate-500 mt-1 uppercase">Initialize secure liquidation of assets.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div className="bg-white dark:bg-[#0D1117] border border-slate-200 dark:border-white/5 p-6 md:p-10 relative">
+                {!isLoading ? (
+                    <div className="space-y-10">
+                        {/* Stats Summary Grid */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <StatNode label="Liquid_Capital" value={`$${availableLiquidity.toLocaleString(undefined, {minimumFractionDigits: 2})}`} icon={<Wallet size={12}/>} />
+                            <StatNode label="Market_Assets" value={`$${(totalShares * sharePrice).toLocaleString(undefined, {minimumFractionDigits: 2})}`} icon={<LineChart size={12}/>} />
+                            <StatNode label="Verified_Tier_Limit" value={`$${profile?.withdrawalLimit.toLocaleString()}`} icon={<ShieldCheck size={12}/>} />
+                        </div>
+
                         <WithdrawAlert
                             kycStatus={profile?.kycStatus || "pending"}
-                            withdrawalPasswordSet={!!profile?.withdrawal_password}
+                            withdrawalPasswordSet={!!profile?.withdrawalPassword}
                         />
-                        <WithdrawForm onSubmit={onSubmit} />
-                    </>
-                    :
-                    <div className="space-y-4 pb-4">
-                        <Skeleton className="h-[140px] w-full rounded-xl" />
-                        <Skeleton className="h-[140px] w-full rounded-xl" />
-                        <Skeleton className="h-[340px] w-full rounded-xl" />
-                    </div>}
-
+                        
+                        <div className="pt-6 border-t border-slate-100 dark:border-white/5">
+                            <h3 className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-[0.3em] mb-6 flex items-center gap-2">
+                                <Activity size={14} className="text-brand-500" /> Dispatch_Parameters
+                            </h3>
+                            <WithdrawForm onSubmit={onSubmit} />
+                        </div>
+                    </div>
+                ) : (
+                    <div className="space-y-6">
+                        <Skeleton className="h-[80px] w-full rounded-none" />
+                        <Skeleton className="h-[120px] w-full rounded-none" />
+                        <Skeleton className="h-[300px] w-full rounded-none" />
+                    </div>
+                )}
             </div>
+        </div>
+    );
+}
+
+function StatNode({ label, value, icon }: { label: string; value: string; icon: React.ReactNode }) {
+    return (
+        <div className="p-4 bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/10">
+            <div className="flex items-center gap-2 mb-2">
+                <span className="text-slate-400">{icon}</span>
+                <span className="text-[9px] font-mono font-bold text-slate-500 uppercase tracking-widest">{label}</span>
+            </div>
+            <p className="text-lg font-black text-slate-900 dark:text-white tracking-tighter">{value}</p>
         </div>
     );
 }

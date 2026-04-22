@@ -5,14 +5,12 @@ import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import { Dropdown } from "../ui/dropdown/Dropdown";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
-import Loading from "../ui/Loading";
-import { getUser } from "@/lib/appwrite/auth";
-import {
-  databases,
-  DB_ID,
-  NOTIFICATION_COLLECTION,
-} from "@/lib/appwrite/client";
-import { Query } from "appwrite";
+import { Bell, CheckCheck, X, Clock, Info, ShieldAlert, Signal } from "lucide-react";
+
+// --- FIREBASE IMPORTS ---
+import { auth, db } from "@/lib/firebase/config";
+import { onAuthStateChanged } from "firebase/auth";
+import { collection, query, where, orderBy, limit, onSnapshot, doc, writeBatch } from "firebase/firestore";
 
 type Notification = {
   id: string;
@@ -27,264 +25,216 @@ export default function NotificationDropdown() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [isOpen, setIsOpen] = useState(false);
-  const [notifying, setNotifying] = useState(false);
+  const [hasUnread, setHasUnread] = useState(false);
 
-  // Fetch notifications on mount
   useEffect(() => {
-    const fetchNotifications = async () => {
-      try {
-        const user = await getUser();
-        if (!user) return;
+    const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        setLoading(false);
+        setNotifications([]);
+        return;
+      }
 
-        const res = await databases.listDocuments(
-          DB_ID,
-          NOTIFICATION_COLLECTION,
-          [Query.equal("userId", user.$id), Query.orderDesc("$createdAt")]
-        );
+      // --- REAL-TIME SIGNAL FEED ---
+      const q = query(
+        collection(db, "notifications"),
+        where("userId", "==", user.uid),
+        orderBy("createdAt", "desc"),
+        limit(20)
+      );
 
-        const mapped = res.documents.map((doc) => ({
-          id: doc.$id,
-          title: doc.title,
-          message: doc.message,
-          type: doc.type,
-          read: doc.read,
-          created_at: doc.$createdAt,
-        }));
+      const unsubscribeNotifs = onSnapshot(q, (snapshot) => {
+        const mapped: Notification[] = snapshot.docs.map((doc) => {
+          const data = doc.data();
+
+          // --- BULLETPROOF DATE PARSING ---
+          // Prevents the "toDate is not a function" crash from legacy Appwrite strings
+          let parsedDate = new Date().toISOString(); 
+          if (data.createdAt) {
+              if (typeof data.createdAt.toDate === 'function') {
+                  // Modern Firebase Timestamp
+                  parsedDate = data.createdAt.toDate().toISOString();
+              } else if (typeof data.createdAt === 'string' || typeof data.createdAt === 'number') {
+                  // Legacy Appwrite String or Unix Number
+                  const dateObj = new Date(data.createdAt);
+                  if (!isNaN(dateObj.getTime())) {
+                      parsedDate = dateObj.toISOString();
+                  }
+              }
+          }
+
+          return {
+            id: doc.id,
+            title: data.title || "System Alert",
+            message: data.message || "",
+            type: data.type || "info",
+            read: data.read || false,
+            created_at: parsedDate,
+          };
+        });
 
         setNotifications(mapped);
-
-        const hasUnread = mapped.some((n) => !n.read);
-        setNotifying(hasUnread);
-      } catch (error) {
-        console.error("Error fetching notifications:", error);
-      } finally {
+        setHasUnread(mapped.some((n) => !n.read));
         setLoading(false);
-      }
-    };
+      }, (error) => {
+        console.error("Signal Feed Sync Failure:", error);
+        setLoading(false);
+      });
 
-    fetchNotifications();
+      return () => unsubscribeNotifs();
+    });
+
+    return () => unsubscribeAuth();
   }, []);
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
-  function toggleDropdown() {
-    setIsOpen((prev) => !prev);
-  }
-
-  function closeDropdown() {
-    setIsOpen(false);
-  }
-
   const markAllAsRead = async () => {
+    const user = auth.currentUser;
+    if (!user || unreadCount === 0) return;
+
     try {
-      const user = await getUser();
-      if (!user) return;
+      const batch = writeBatch(db);
+      notifications.forEach(n => {
+        if (!n.read) {
+          const ref = doc(db, "notifications", n.id);
+          batch.update(ref, { read: true });
+        }
+      });
 
-      const unreadRes = await databases.listDocuments(
-        DB_ID,
-        NOTIFICATION_COLLECTION,
-        [Query.equal("userId", user.$id), Query.equal("read", false)]
-      );
-
-      const updatePromises = unreadRes.documents.map((n) =>
-        databases.updateDocument(DB_ID, NOTIFICATION_COLLECTION, n.$id, {
-          read: true,
-        })
-      );
-
-      await Promise.all(updatePromises);
-
-      setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
-      setNotifying(false);
+      await batch.commit();
     } catch (error) {
-      console.error("Error marking notifications as read:", error);
+      console.error("Protocol Error: Mark all as read failed", error);
     }
-  };
-
-  const handleClick = async () => {
-    toggleDropdown();
-
-    // Auto-mark unread as read when opening
-    if (notifying) {
-      await markAllAsRead();
-    }
-  };
-
-  const formatDateTime = (dateStr: string) => {
-    const d = new Date(dateStr);
-    return d.toLocaleString();
   };
 
   return (
     <div className="relative shrink-0">
+      {/* TRIGGER BUTTON */}
       <button
-        className="relative flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
-        onClick={handleClick}
-        aria-label="Notifications"
+        className="relative flex h-10 w-10 items-center justify-center border border-slate-200 dark:border-white/10 bg-white dark:bg-[#0D1117] text-slate-500 transition-colors hover:border-brand-500 hover:text-brand-500 dropdown-toggle"
+        onClick={() => setIsOpen(!isOpen)}
+        aria-label="Toggle Signal Feed"
       >
-        {/* Notification dot */}
-        {notifying && (
-          <span className="absolute right-0 top-0.5 z-10 flex h-2 w-2 rounded-full bg-orange-400">
-            <span className="absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75 animate-ping" />
+        {hasUnread && (
+          <span className="absolute -top-1 -right-1 z-10 flex h-3 w-3">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-500 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-3 w-3 bg-brand-600 border border-white dark:border-[#0D1117]"></span>
           </span>
         )}
-
-        <svg
-          className="fill-current"
-          width="20"
-          height="20"
-          viewBox="0 0 20 20"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            fillRule="evenodd"
-            clipRule="evenodd"
-            d="M10.75 2.29248C10.75 1.87827 10.4143 1.54248 10 1.54248C9.58583 1.54248 9.25004 1.87827 9.25004 2.29248V2.83613C6.08266 3.20733 3.62504 5.9004 3.62504 9.16748V14.4591H3.33337C2.91916 14.4591 2.58337 14.7949 2.58337 15.2091C2.58337 15.6234 2.91916 15.9591 3.33337 15.9591H4.37504H15.625H16.6667C17.0809 15.9591 17.4167 15.6234 17.4167 15.2091C17.4167 14.7949 17.0809 14.4591 16.6667 14.4591H16.375V9.16748C16.375 5.9004 13.9174 3.20733 10.75 2.83613V2.29248ZM14.875 14.4591V9.16748C14.875 6.47509 12.6924 4.29248 10 4.29248C7.30765 4.29248 5.12504 6.47509 5.12504 9.16748V14.4591H14.875ZM8.00004 17.7085C8.00004 18.1228 8.33583 18.4585 8.75004 18.4585H11.25C11.6643 18.4585 12 18.1228 12 17.7085C12 17.2943 11.6643 16.9585 11.25 16.9585H8.75004C8.33583 16.9585 8.00004 17.2943 8.00004 17.7085Z"
-          />
-        </svg>
+        <Bell size={18} />
       </button>
 
       <Dropdown
         isOpen={isOpen}
-        onClose={closeDropdown}
-        className="absolute -right-[240px] mt-[17px] flex h-[480px] w-[350px] flex-col rounded-2xl border border-gray-200 bg-white p-3 shadow-theme-lg dark:border-gray-800 dark:bg-gray-dark sm:w-[361px] lg:right-0"
+        onClose={() => setIsOpen(false)}
+        className="absolute -right-[240px] mt-4 z-9999999! flex h-[500px] w-[350px] flex-col border border-slate-200 dark:border-white/10 bg-white dark:bg-[#0D1117] shadow-2xl p-0 sm:w-[380px] lg:right-0 overflow-hidden"
       >
-        {/* Header */}
-        <div className="mb-3 flex items-center justify-between border-b border-gray-100 pb-3 dark:border-gray-700">
-          <div className="flex items-center gap-2">
-            <h5 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
-              Notifications
-            </h5>
-            {unreadCount > 0 && (
-              <span className="inline-flex items-center rounded-full bg-red-50 px-2 py-0.5 text-[10px] font-semibold text-red-600 dark:bg-red-500/10 dark:text-red-300">
-                {unreadCount} new
-              </span>
-            )}
-          </div>
+        <div className="flex flex-col flex-1 h-full w-full">
 
-          <div className="flex items-center gap-2">
-            {notifications.length > 0 && unreadCount > 0 && (
-              <button
-                type="button"
-                onClick={markAllAsRead}
-                className="rounded-full px-2 py-1 text-[10px] font-medium text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-white/5"
-              >
-                Mark all read
+          {/* HEADER */}
+          <div className="shrink-0 p-4 border-b border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-white/[0.02] flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="flex items-center justify-center w-6 h-6 bg-brand-500/10 text-brand-500 border border-brand-500/20">
+                <Signal size={12} />
+              </div>
+              <h5 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-900 dark:text-white">
+                Notifications
+              </h5>
+              {unreadCount > 0 && (
+                <span className="bg-brand-500 text-white px-1.5 py-0.5 text-[8px] font-black font-mono">
+                  {unreadCount}
+                </span>
+              )}
+            </div>
+            <div className="flex items-center gap-3">
+              {unreadCount > 0 && (
+                <button
+                  onClick={markAllAsRead}
+                  className="text-[9px] font-mono font-bold text-slate-400 hover:text-brand-500 uppercase flex items-center gap-1 transition-colors"
+                >
+                  <CheckCheck size={12} /> Clear_Notifications
+                </button>
+              )}
+              <button onClick={() => setIsOpen(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
+                <X size={16} />
               </button>
-            )}
-            <button
-              onClick={toggleDropdown}
-              className="dropdown-toggle text-gray-500 transition hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-            >
-              <svg
-                className="fill-current"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  fillRule="evenodd"
-                  clipRule="evenodd"
-                  d="M6.21967 7.28131C5.92678 6.98841 5.92678 6.51354 6.21967 6.22065C6.51256 5.92775 6.98744 5.92775 7.28033 6.22065L11.999 10.9393L16.7176 6.22078C17.0105 5.92789 17.4854 5.92788 17.7782 6.22078C18.0711 6.51367 18.0711 6.98855 17.7782 7.28144L13.0597 12L17.7782 16.7186C18.0711 17.0115 18.0711 17.4863 17.7782 17.7792C17.4854 18.0721 17.0105 18.0721 16.7176 17.7792L11.999 13.0607L7.28033 17.7794C6.98744 18.0722 6.51256 18.0722 6.21967 17.7794C5.92678 17.4865 5.92678 17.0116 6.21967 16.7187L10.9384 12L6.21967 7.28131Z"
-                />
-              </svg>
-            </button>
+            </div>
           </div>
-        </div>
 
-        {loading ? (
-          <Loading />
-        ) : (
-          <>
-            {/* Notifications list */}
-            {notifications.length === 0 ? (
-              <div className="flex flex-1 flex-col items-center justify-center px-4 text-center">
-                <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 text-gray-400 dark:bg-gray-800 dark:text-gray-500">
-                  <svg
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    className="fill-current"
-                  >
-                    <path d="M10.75 2.29248C10.75 1.87827 10.4143 1.54248 10 1.54248C9.58583 1.54248 9.25004 1.87827 9.25004 2.29248V2.83613C6.08266 3.20733 3.62504 5.9004 3.62504 9.16748V14.4591H3.33337C2.91916 14.4591 2.58337 14.7949 2.58337 15.2091C2.58337 15.6234 2.91916 15.9591 3.33337 15.9591H4.37504H15.625H16.6667C17.0809 15.9591 17.4167 15.6234 17.4167 15.2091C17.4167 14.7949 17.0809 14.4591 16.6667 14.4591H16.375V9.16748C16.375 5.9004 13.9174 3.20733 10.75 2.83613V2.29248ZM8.00004 17.7085C8.00004 18.1228 8.33583 18.4585 8.75004 18.4585H11.25C11.6643 18.4585 12 18.1228 12 17.7085C12 17.2943 11.6643 16.9585 11.25 16.9585H8.75004C8.33583 16.9585 8.00004 17.2943 8.00004 17.7085Z" />
-                  </svg>
+          {/* FEED CONTENT */}
+          <div className="flex-1 grow overflow-y-auto no-scrollbar bg-white dark:bg-[#0D1117]">
+            {loading ? (
+              <div className="h-full flex items-center justify-center font-mono text-[10px] text-slate-500 uppercase animate-pulse">Establishing_Link...</div>
+            ) : notifications.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-full px-6 text-center opacity-40">
+                <div className="w-12 h-12 border border-slate-200 dark:border-white/10 flex items-center justify-center mb-4">
+                  <Bell size={24} className="text-slate-300" />
                 </div>
-                <p className="mb-1 text-sm font-medium text-gray-800 dark:text-gray-200">
-                  You’re all caught up
-                </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  New updates and alerts will appear here.
-                </p>
+                <p className="text-[10px] font-mono uppercase tracking-widest text-slate-500">Node Quiet: Zero Incoming Signals</p>
               </div>
             ) : (
-              <>
-                <ul className="custom-scrollbar flex h-auto flex-1 flex-col overflow-y-auto">
-                  {notifications.map((n) => (
-                    <li key={n.id}>
-                      <DropdownItem
-                        onItemClick={closeDropdown}
-                        className="relative flex items-start gap-3 rounded-lg border-b border-gray-100 px-4.5 py-3 hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-white/5"
+              <ul className="divide-y divide-slate-100 dark:divide-white/5">
+                {notifications.map((n) => (
+                  <li key={n.id} className={`group transition-colors ${!n.read ? 'bg-brand-500/[0.03]' : ''}`}>
+                    <DropdownItem
+                      onItemClick={() => setIsOpen(false)}
+                      className="flex items-start gap-4 p-4 hover:bg-slate-50 dark:hover:bg-white/[0.01]"
+                    >
+                      <div className={`mt-1 h-8 w-8 shrink-0 flex items-center justify-center border transition-all
+                      ${n.read
+                          ? 'border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-white/5'
+                          : 'border-brand-500/30 bg-brand-500/10 shadow-[0_0_10px_rgba(31,149,201,0.1)]'
+                        }`}
                       >
-                        {/* Avatar / Icon */}
-                        <span className="relative z-[1] block h-10 w-10 max-w-10 rounded-full">
-                          <Image
-                            width={40}
-                            height={40}
-                            src="/images/user/user-02.jpg"
-                            alt="User"
-                            className="h-full w-full overflow-hidden rounded-full object-cover"
-                          />
-                          {!n.read && (
-                            <span className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-brand-500 ring-2 ring-white dark:ring-gray-900" />
-                          )}
-                        </span>
+                        {n.type === 'alert'
+                          ? <ShieldAlert size={14} className="text-red-500" />
+                          : <Info size={14} className={n.read ? 'text-slate-400' : 'text-brand-500'} />
+                        }
+                      </div>
 
-                        {/* Text content */}
-                        <span className="block">
-                          <div className="mb-1.5 block text-theme-sm text-gray-500 dark:text-gray-400">
-                            <div className="flex items-center gap-1">
-                              <h6 className="font-medium text-gray-800 dark:text-white/90">
-                                {n.title}
-                              </h6>
-                              {n.type && (
-                                <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-gray-500 dark:bg-gray-800 dark:text-gray-400">
-                                  {n.type}
-                                </span>
-                              )}
-                            </div>
-                            <span className="mt-0.5 block max-w-[230px] truncate text-xs text-gray-600 dark:text-gray-300">
-                              {n.message}
-                            </span>
-                          </div>
-
-                          <span className="flex items-center gap-2 text-theme-xs text-gray-500 dark:text-gray-400">
-                            <span>{formatDateTime(n.created_at)}</span>
-                            {!n.read && (
-                              <>
-                                <span className="h-1 w-1 rounded-full bg-brand-500" />
-                                <span className="text-[10px] font-medium text-brand-500">
-                                  New
-                                </span>
-                              </>
-                            )}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2 mb-1">
+                          <h6 className={`text-[11px] font-black uppercase tracking-tight truncate ${n.read ? 'text-slate-600 dark:text-slate-400 font-bold' : 'text-slate-900 dark:text-white'}`}>
+                            {n.title}
+                          </h6>
+                          <span className="text-[9px] font-mono font-bold text-slate-400 shrink-0">
+                            {new Date(n.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}
                           </span>
-                        </span>
-                      </DropdownItem>
-                    </li>
-                  ))}
-                </ul>
+                        </div>
+                        <p className={`text-[10px] font-mono leading-relaxed mb-3 line-clamp-2 uppercase ${n.read ? 'text-slate-500' : 'text-slate-700 dark:text-slate-300'}`}>
+                          {n.message}
+                        </p>
 
-                <Link
-                  href="/"
-                  className="mt-3 block rounded-lg border border-gray-300 bg-white px-4 py-2 text-center text-sm font-medium text-gray-700 hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700"
-                >
-                  View all notifications
-                </Link>
-              </>
+                        <div className="flex items-center gap-2">
+                          <Clock size={10} className="text-slate-400" />
+                          <span className="text-[9px] font-mono text-slate-400 uppercase tracking-tighter">
+                            {new Date(n.created_at).toLocaleDateString(undefined, { month: 'short', day: '2-digit', year: 'numeric' })}
+                          </span>
+                          {!n.read && (
+                            <span className="ml-auto text-[8px] font-black text-brand-500 uppercase tracking-widest animate-pulse">Unread_Notification</span>
+                          )}
+                        </div>
+                      </div>
+                    </DropdownItem>
+                  </li>
+                ))}
+              </ul>
             )}
-          </>
-        )}
+          </div>
+
+          {/* FOOTER ACTION */}
+          {/* <div className="shrink-0 p-3 bg-slate-50 dark:bg-white/[0.02] border-t border-slate-100 dark:border-white/5">
+            <Link
+              href="/notifications"
+              onClick={() => setIsOpen(false)}
+              className="flex items-center justify-center w-full py-2.5 text-[10px] font-black uppercase tracking-widest bg-white dark:bg-[#0D1117] border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white hover:border-brand-500 transition-all active:scale-[0.98]"
+              style={{ clipPath: 'polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px)' }}
+            >
+              View All Ledger
+            </Link>
+          </div> */}
+        </div>
       </Dropdown>
     </div>
   );

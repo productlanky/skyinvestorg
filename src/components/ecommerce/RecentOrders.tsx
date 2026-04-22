@@ -1,18 +1,15 @@
 "use client";
 
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHeader,
-  TableRow,
+import React, { useEffect, useState } from "react";
+import { 
+  Table, TableBody, TableCell, TableHeader, TableRow 
 } from "../ui/table";
-import Badge from "../ui/badge/Badge";
-import { useEffect, useState } from "react";
-import Link from "next/link";
-import { getUser } from "@/lib/appwrite/auth";
-import { databases, DB_ID, TRANSACTION_COLLECTION } from "@/lib/appwrite/client";
-import { Query } from "appwrite";
+import { ArrowDownCircle, ArrowUpCircle, TrendingUp, Activity, CheckCircle2, Clock, XCircle } from "lucide-react";
+
+// --- FIREBASE IMPORTS ---
+import { auth, db } from "@/lib/firebase/config";
+import { onAuthStateChanged } from "firebase/auth";
+import { collection, query, where, orderBy, limit, onSnapshot } from "firebase/firestore";
 
 type Transaction = {
   id: string;
@@ -22,123 +19,137 @@ type Transaction = {
   created_at: string;
 };
 
-export default function RecentTransactions() {
+export default function RecentOrders() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchTransactions = async () => {
-      const user = await getUser();
-      if (!user) return;
+    const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
+      if (!user) { setLoading(false); return; }
 
-      try {
-        const response = await databases.listDocuments(
-          DB_ID,
-          TRANSACTION_COLLECTION,
-          [Query.equal("userId", user.$id)]
-        );
+      const txQuery = query(
+        collection(db, "transactions"),
+        where("userId", "==", user.uid),
+        orderBy("createdAt", "desc"),
+        limit(5)
+      );
 
-        const transactions: Transaction[] = response.documents.map((doc) => ({
-          id: doc.$id || doc.id,
-          type: doc.type,
-          amount: Number(doc.amount),
-          status: doc.status,
-          created_at: doc.$createdAt,
-        }));
+      const unsubscribeTx = onSnapshot(txQuery, (snapshot) => {
+        const txData: Transaction[] = snapshot.docs.map((doc) => {
+          const data = doc.data();
 
-        setTransactions(transactions || []);
+          // --- BULLETPROOF DATE PARSING ---
+          // Prevents the "toDate is not a function" crash from legacy strings
+          let parsedDate = new Date().toISOString(); 
+          if (data.createdAt) {
+              if (typeof data.createdAt.toDate === 'function') {
+                  // Modern Firebase Timestamp
+                  parsedDate = data.createdAt.toDate().toISOString();
+              } else if (typeof data.createdAt === 'string' || typeof data.createdAt === 'number') {
+                  // Legacy Appwrite String or Unix Number
+                  const dateObj = new Date(data.createdAt);
+                  if (!isNaN(dateObj.getTime())) {
+                      parsedDate = dateObj.toISOString();
+                  }
+              }
+          }
 
-      } catch (error) {
-        console.error("Error fetching profile:", error);
-      }
+          return {
+            id: doc.id,
+            type: data.type || data.category || "unknown", // Check both type and category
+            amount: Number(data.amount) || 0,
+            status: data.status || "pending",
+            created_at: parsedDate, 
+          };
+        });
+        setTransactions(txData);
+        setLoading(false);
+      }, (error) => {
+          console.error("Dashboard Ledger Sync Error:", error);
+          setLoading(false);
+      });
 
-      setLoading(false);
-    };
-
-    fetchTransactions();
+      return () => unsubscribeTx();
+    });
+    return () => unsubscribeAuth();
   }, []);
 
+  const getStatusDisplay = (status: Transaction["status"]) => {
+    switch (status) {
+      case "approved":
+        return <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-700 ring-1 ring-inset ring-emerald-600/20 dark:bg-emerald-500/10 dark:text-emerald-400 dark:ring-emerald-500/20"><CheckCircle2 size={12}/> Approved</span>;
+      case "pending":
+        return <span className="inline-flex items-center gap-1 rounded-md bg-amber-50 px-2 py-1 text-xs font-medium text-amber-700 ring-1 ring-inset ring-amber-600/20 dark:bg-amber-500/10 dark:text-amber-400 dark:ring-amber-500/20"><Clock size={12}/> Pending</span>;
+      case "rejected":
+        return <span className="inline-flex items-center gap-1 rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/20 dark:bg-red-500/10 dark:text-red-400 dark:ring-red-500/20"><XCircle size={12}/> Rejected</span>;
+      default:
+        return <span className="text-xs text-gray-500 uppercase">{status}</span>;
+    }
+  };
+
+  const getTypeIcon = (type: string) => {
+    const t = type.toLowerCase();
+    if (t.includes('deposit')) return <ArrowDownCircle size={16} className="text-blue-500" />;
+    if (t.includes('withdraw')) return <ArrowUpCircle size={16} className="text-indigo-500" />;
+    if (t.includes('profit') || t.includes('bonus') || t.includes('trade')) return <TrendingUp size={16} className="text-emerald-500" />;
+    return <Activity size={16} className="text-gray-400" />;
+  };
+
   return (
-    <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white px-4 pb-3 pt-4 dark:border-gray-800 dark:bg-white/[0.03] sm:px-6">
-      <div className="flex flex-col gap-2 mb-4 sm:flex-row sm:items-center sm:justify-between">
-        <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
-          Recent Transactions
-        </h3>
-        <Link
-          href="/transactions"
-          className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-theme-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200"
-        >
-          See all
-        </Link>
-      </div>
+    <div className="w-full overflow-x-auto no-scrollbar">
+      <Table className="w-full min-w-[500px]">
+        <TableHeader>
+          <TableRow className="border-b border-gray-100 dark:border-gray-800">
+            <TableCell isHeader className="py-3 px-4 text-[10px] font-mono font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">Operation</TableCell>
+            <TableCell isHeader className="py-3 px-4 text-[10px] font-mono font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">Amount</TableCell>
+            <TableCell isHeader className="py-3 px-4 text-[10px] font-mono font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">Status</TableCell>
+            <TableCell isHeader className="py-3 px-4 text-[10px] font-mono font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">Uplink_Date</TableCell>
+          </TableRow>
+        </TableHeader>
 
-      <div className="max-w-full overflow-x-auto">
-        <Table>
-          <TableHeader className="border-y border-gray-100 dark:border-gray-800">
+        <TableBody className="divide-y divide-gray-50 dark:divide-gray-800/50">
+          {loading ? (
+            Array.from({ length: 5 }).map((_, i) => (
+              <TableRow key={i}>
+                <TableCell className="py-4 px-4"><div className="h-4 w-24 rounded bg-gray-100 dark:bg-gray-800 animate-pulse" /></TableCell>
+                <TableCell className="py-4 px-4"><div className="h-4 w-16 rounded bg-gray-100 dark:bg-gray-800 animate-pulse" /></TableCell>
+                <TableCell className="py-4 px-4"><div className="h-5 w-20 rounded bg-gray-100 dark:bg-gray-800 animate-pulse" /></TableCell>
+                <TableCell className="py-4 px-4"><div className="h-4 w-28 rounded bg-gray-100 dark:bg-gray-800 animate-pulse" /></TableCell>
+              </TableRow>
+            ))
+          ) : transactions.length > 0 ? (
+            transactions.map((tx) => (
+              <TableRow key={tx.id} className="hover:bg-gray-50 dark:hover:bg-white/[0.02] transition-colors group">
+                <TableCell className="py-3 px-4">
+                  <div className="flex items-center gap-3">
+                      {getTypeIcon(tx.type)}
+                      <span className="text-[11px] font-black text-gray-900 dark:text-gray-100 uppercase tracking-widest">
+                        {tx.type.replace("_", " ")}
+                      </span>
+                  </div>
+                </TableCell>
+                <TableCell className="py-3 px-4">
+                  <span className="text-sm font-black text-gray-700 dark:text-gray-300">
+                    ${tx.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                  </span>
+                </TableCell>
+                <TableCell className="py-3 px-4">
+                  {getStatusDisplay(tx.status)}
+                </TableCell>
+                <TableCell className="py-3 px-4 text-[10px] font-mono text-gray-500 dark:text-gray-400 uppercase">
+                  {new Date(tx.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                </TableCell>
+              </TableRow>
+            ))
+          ) : (
             <TableRow>
-              <TableCell isHeader className="py-3 text-start text-theme-xs font-medium text-gray-500 dark:text-gray-400">Type</TableCell>
-              <TableCell isHeader className="py-3 text-start text-theme-xs font-medium text-gray-500 dark:text-gray-400">Amount</TableCell>
-              <TableCell isHeader className="py-3 text-start text-theme-xs font-medium text-gray-500 dark:text-gray-400">Status</TableCell>
-              <TableCell isHeader className="py-3 text-start text-theme-xs font-medium text-gray-500 dark:text-gray-400">Date</TableCell>
+              <TableCell colSpan={4} className="py-12 text-center text-[10px] font-mono font-bold text-gray-500 uppercase tracking-[0.2em] opacity-50">
+                NO_RECENT_TRANSACTIONS_FOUND
+              </TableCell>
             </TableRow>
-          </TableHeader>
-
-          <TableBody className="divide-y divide-gray-100 dark:divide-gray-800">
-            {loading
-              ? Array.from({ length: 5 }).map((_, i) => (
-                <TableRow key={i}>
-                  <TableCell className="py-3">
-                    <div className="h-4 w-24 rounded bg-gray-200 dark:bg-gray-700 animate-pulse" />
-                  </TableCell>
-                  <TableCell className="py-3">
-                    <div className="h-4 w-16 rounded bg-gray-200 dark:bg-gray-700 animate-pulse" />
-                  </TableCell>
-                  <TableCell className="py-3">
-                    <div className="h-4 w-20 rounded bg-gray-200 dark:bg-gray-700 animate-pulse" />
-                  </TableCell>
-                  <TableCell className="py-3">
-                    <div className="h-4 w-28 rounded bg-gray-200 dark:bg-gray-700 animate-pulse" />
-                  </TableCell>
-                </TableRow>
-              ))
-              : transactions.length > 0
-                ? transactions.slice(0, 5).map((tx) => (
-                  <TableRow key={tx.id}>
-                    <TableCell className="py-3 text-theme-sm text-gray-800 capitalize dark:text-white/90">
-                      {tx.type.replace("_", " ")}
-                    </TableCell>
-                    <TableCell className="py-3 text-theme-sm text-gray-700 dark:text-gray-300">
-                      ${tx.amount.toFixed(2)}
-                    </TableCell>
-                    <TableCell className="py-3 text-theme-sm">
-                      <Badge
-                        size="sm"
-                        color={
-                          tx.status == "approved"
-                            ? "success"
-                            : tx.status == "pending"
-                              ? "warning"
-                              : "error"
-                        }
-                      >
-                        {tx.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="py-3 text-theme-xs text-gray-500 dark:text-gray-400">
-                      {new Date(tx.created_at).toLocaleString()}
-                    </TableCell>
-                  </TableRow>
-                ))
-                : (
-                  <TableRow>
-                    <TableCell colSpan={4} className="py-4 text-center text-gray-500 dark:text-gray-400">
-                      No recent transactions found.
-                    </TableCell>
-                  </TableRow>
-                )}
-          </TableBody>
-        </Table>
-      </div>
+          )}
+        </TableBody>
+      </Table>
     </div>
   );
 }

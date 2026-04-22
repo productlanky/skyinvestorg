@@ -27,7 +27,7 @@ export default function Home() {
     if (section && pathname !== "/dashboard") {
       navigate.replace('/dashboard')
     }else {
-      navigate.replace('/signin')
+      navigate.replace('/login')
     }
   }, [section, pathname, navigate]);
 

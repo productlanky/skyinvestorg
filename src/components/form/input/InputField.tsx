@@ -1,92 +1,83 @@
-import React, { FC } from "react";
+"use client";
 
-interface InputProps {
-  type?: "text" | "number" | "email" | "password" | "date" | "time" | string;
-  id?: string;
-  name?: string;
-  placeholder?: string;
-  defaultValue?: string | number;
-  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  className?: string;
-  min?: string | number;
-  max?: string | number;
-  step?: number;
-  disabled?: boolean;
+import React, { forwardRef } from "react";
+
+interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   success?: boolean;
   error?: boolean;
-  readonly?: boolean;
-  hint?: string; // Optional hint text
-  value?: string | number;
+  hint?: string;
+  className?: string;
 }
 
-const Input: FC<InputProps> = ({
-  type = "text",
-  id,
-  name,
-  placeholder,
-  defaultValue,
-  onChange,
-  className = "",
-  min,
-  max,
-  step,
-  readonly,
-  disabled = false,
-  success = false,
-  error = false,
-  hint,
-  value,
-  ...props
-}) => {
-  // Determine input styles based on state (disabled, success, error)
-  let inputClasses = `h-11 w-full rounded-lg border appearance-none px-4 py-2.5 text-sm shadow-theme-xs placeholder:text-gray-400 focus:outline-hidden focus:ring-3 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800 ${className}`;
+const Input = forwardRef<HTMLInputElement, InputProps>(
+  ({ type = "text", id, name, placeholder, className = "", success, error, hint, disabled, readOnly, ...props }, ref) => {
+    
+    // Base Terminal Styles
+    const baseClasses = `
+      h-11 w-full px-10 py-2.5 text-sm font-mono transition-all duration-200 outline-none
+      bg-slate-50 dark:bg-[#0D1117] 
+      border transition-colors
+      placeholder:text-slate-300 dark:placeholder:text-gray-700
+      disabled:opacity-50 disabled:cursor-not-allowed
+      
+      /* Autofill Hack: Forces background to match our terminal theme */
+      autofill:shadow-[inset_0_0_0px_1000px_#f8fafc] 
+      dark:autofill:shadow-[inset_0_0_0px_1000px_#0D1117]
+      autofill:text-fill-slate-900
+      dark:autofill:text-fill-white
+    `;
 
-  // Add styles for the different states
-  if (disabled) {
-    inputClasses += ` text-gray-500 border-gray-300 cursor-not-allowed dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700`;
-  } else if (error) {
-    inputClasses += ` text-error-800 border-error-500 focus:ring-3 focus:ring-error-500/10  dark:text-error-400 dark:border-error-500`;
-  } else if (success) {
-    inputClasses += ` text-success-500 border-success-400 focus:ring-success-500/10 focus:border-success-300  dark:text-success-400 dark:border-success-500`;
-  } else {
-    inputClasses += ` bg-transparent text-gray-800 border-gray-300 focus:border-brand-300 focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-800`;
+    // Dynamic State Styles
+    const stateClasses = error
+      ? "border-red-500 text-red-600 dark:text-red-400 focus:border-red-600"
+      : success
+      ? "border-emerald-500 text-emerald-600 dark:text-emerald-400 focus:border-emerald-600"
+      : "border-slate-200 dark:border-white/10 text-slate-900 dark:text-white focus:border-brand-500 dark:focus:border-brand-500 focus:bg-white dark:focus:bg-brand-500/5";
+
+    return (
+      <div className="w-full space-y-1.5 group relative">
+        
+        {/* Terminal Prefix Indicator */}
+        <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none z-10">
+          <span className={`font-mono font-bold text-xs animate-pulse ${
+            error ? "text-red-500" : success ? "text-emerald-500" : "text-brand-500"
+          }`}>
+            {">"}
+          </span>
+        </div>
+
+        <div className="relative">
+          <input
+            ref={ref}
+            type={type}
+            id={id}
+            name={name}
+            disabled={disabled}
+            readOnly={readOnly}
+            placeholder={placeholder?.toUpperCase() || "ENTRY_NODE"}
+            className={`${baseClasses} ${stateClasses} ${className}`}
+            {...props}
+          />
+
+          {/* Decorative Terminal Corner Detail */}
+          <div className={`absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 pointer-events-none transition-colors ${
+            error ? "border-red-500/50" : success ? "border-emerald-500/50" : "border-brand-500/30 dark:border-brand-500/50"
+          }`}></div>
+        </div>
+
+        {/* Feedback / Hint Text */}
+        {hint && (
+          <p className={`text-[10px] font-mono uppercase tracking-widest mt-1 ${
+            error ? "text-red-500" : success ? "text-emerald-500" : "text-slate-400 dark:text-gray-500"
+          }`}>
+            {error ? `[!] ERROR: ${hint}` : success ? `[*] SUCCESS: ${hint}` : `// ${hint}`}
+          </p>
+        )}
+      </div>
+    );
   }
+);
 
-
-  console.log(value)
-  return (
-    <div className="relative">
-      <input
-        type={type}
-        id={id}
-        name={name}
-        placeholder={placeholder}
-        defaultValue={defaultValue}
-        onChange={onChange}
-        min={min}
-        max={max}
-        step={step}
-        readOnly={readonly}
-        disabled={disabled}
-        className={inputClasses}
-        {...props}
-      />
-
-      {/* Optional Hint Text */}
-      {hint && (
-        <p
-          className={`mt-1.5 text-xs ${error
-            ? "text-error-500"
-            : success
-              ? "text-success-500"
-              : "text-gray-500"
-            }`}
-        >
-          {hint}
-        </p>
-      )}
-    </div>
-  );
-};
+Input.displayName = "Input";
 
 export default Input;

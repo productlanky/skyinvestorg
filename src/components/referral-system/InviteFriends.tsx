@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { XIcon } from "lucide-react";
-import { RiTelegram2Fill } from "react-icons/ri";
+import { XIcon, Mail, Send, Terminal } from "lucide-react";
 import { companyName } from "@/lib/data/info";
 
 const isValidEmail = (email: string) =>
@@ -26,7 +25,6 @@ export default function InviteFriends() {
 
   const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     const key = e.key;
-
     if ((key === "Enter" || key === ",") && inputValue.trim() !== "") {
       e.preventDefault();
       addEmail(inputValue);
@@ -38,7 +36,8 @@ export default function InviteFriends() {
 
   const handleSendInvites = () => {
     if (emails.length === 0) return;
-    alert(`Invitations sent to:\n${emails.join(", ")}`);
+    // Integration point: Connect your email service provider (SendGrid, Mailgun, etc.)
+    console.log(`Sending batch protocols to: ${emails.join(", ")}`);
     setEmails([]);
     setInputValue("");
   };
@@ -48,111 +47,120 @@ export default function InviteFriends() {
   return (
     <div
       className="
-        max-w-3xl mx-auto mt-8
-        rounded-2xl border border-gray-200/80 dark:border-white/[0.06]
-        bg-white/80 dark:bg-white/[0.03]
-        backdrop-blur-xl shadow-[0_18px_45px_rgba(15,23,42,0.12)]
-        p-6 md:p-7
+        bg-white dark:bg-[#0D1117] 
+        border border-slate-200 dark:border-white/5 
+        p-6 relative group overflow-hidden
       "
     >
-      <div className="flex flex-col gap-1 mb-5">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-gray-500 dark:text-gray-400">
-          Email invites
-        </p>
-        <h2 className="text-xl md:text-2xl font-semibold text-gray-900 dark:text-white">
-          Invite your friends
-        </h2>
-        <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400 max-w-xl">
-          Paste or type multiple email addresses and press{" "}
-          <span className="font-medium">Enter</span> or{" "}
-          <span className="font-medium">,</span> to add them as chips. We’ll
-          send them an invite to join {companyName}.
-        </p>
+      {/* Terminal Tag */}
+      <div className="absolute top-0 right-0 p-2 bg-brand-500/5 text-[9px] font-mono text-brand-500 border-l border-b border-white/5 uppercase tracking-widest">
+        DISPATCH_RELAY_V1
       </div>
 
-      {/* Invite by Email */}
-      <div className="space-y-2">
-        <label className="text-xs font-medium text-gray-700 dark:text-gray-300">
-          Friend&apos;s email addresses
-        </label>
-
-        <div
-          className="
-            flex w-full flex-wrap items-center gap-2
-            rounded-xl border border-gray-200 dark:border-gray-700
-            bg-white/90 dark:bg-gray-950/70
-            px-2.5 py-2
-            text-sm shadow-theme-xs
-            focus-within:border-brand-500 focus-within:ring-2 focus-within:ring-brand-500/15
-            transition
-          "
-        >
-          {/* Chips */}
-          {emails.map((email) => (
-            <span
-              key={email}
-              className="
-                inline-flex items-center gap-1.5
-                rounded-full border border-brand-100
-                bg-brand-50 text-brand-800
-                dark:border-brand-500/30 dark:bg-brand-500/10 dark:text-brand-200
-                px-2.5 py-1 text-xs
-              "
-            >
-              {email}
-              <button
-                type="button"
-                onClick={() => removeEmail(email)}
-                className="inline-flex items-center justify-center rounded-full hover:text-error-500 focus:outline-none"
-              >
-                <XIcon className="w-3.5 h-3.5" />
-              </button>
-            </span>
-          ))}
-
-          {/* Input */}
-          <input
-            type="text"
-            placeholder={
-              emails.length === 0
-                ? "Type an email and press Enter or ,"
-                : "Add another email…"
-            }
-            className="
-              flex-1 min-w-[180px] border-none outline-none bg-transparent
-              text-sm text-gray-800 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500
-            "
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            onKeyDown={handleInputKeyDown}
-          />
-
-          {/* Send button */}
-          <button
-            type="button"
-            onClick={handleSendInvites}
-            disabled={!hasEmails}
-            className={`
-              inline-flex items-center justify-center gap-1.5
-              rounded-lg px-3 py-2 text-xs font-medium
-              transition
-              ${
-                hasEmails
-                  ? "bg-brand-600 text-white hover:bg-brand-700 active:scale-[0.98]"
-                  : "bg-gray-200 text-gray-500 dark:bg-gray-800 dark:text-gray-500 cursor-not-allowed opacity-70"
-              }
-            `}
-          >
-            <RiTelegram2Fill size={16} />
-            <span className="hidden sm:inline">Send invites</span>
-          </button>
+      <div className="flex flex-col gap-6">
+        {/* Header Section */}
+        <div className="flex items-start gap-4">
+          <div className="p-3 border border-brand-500/20 bg-brand-500/5 shrink-0">
+             <Mail className="text-brand-500" size={20} />
+          </div>
+          <div className="space-y-1">
+            <h2 className="text-sm font-black uppercase tracking-widest text-slate-900 dark:text-white">
+              Relay Node Invitations
+            </h2>
+            <p className="text-[11px] font-mono text-slate-500 uppercase tracking-tight leading-relaxed max-w-xl">
+              Queue email addresses to initialize remote invitations. 
+              Use <span className="text-brand-500 font-bold">ENTER</span> or <span className="text-brand-500 font-bold">COMMA</span> to register tokens.
+            </p>
+          </div>
         </div>
 
-        <p className="text-[11px] text-gray-500 dark:text-gray-500">
-          We’ll only use these emails to send an invitation to join your account
-          on {companyName}.
-        </p>
+        {/* Input & Chip Area */}
+        <div className="space-y-3">
+          <label className="text-[9px] font-mono font-bold text-slate-400 uppercase tracking-widest ml-1">
+            Target_Recipient_List
+          </label>
+
+          <div
+            className="
+              flex w-full flex-wrap items-center gap-2
+              bg-slate-50 dark:bg-white/[0.02]
+              border border-slate-200 dark:border-white/10
+              px-3 py-3
+              transition-colors focus-within:border-brand-500/50
+            "
+          >
+            {/* Chips (Terminal Style) */}
+            {emails.map((email) => (
+              <span
+                key={email}
+                className="
+                  inline-flex items-center gap-2
+                  bg-brand-500/10 border border-brand-500/30
+                  text-brand-700 dark:text-brand-400
+                  px-2 py-1 text-[10px] font-mono font-bold uppercase
+                "
+              >
+                {email}
+                <button
+                  type="button"
+                  onClick={() => removeEmail(email)}
+                  className="hover:text-red-500 transition-colors"
+                >
+                  <XIcon className="w-3 h-3" />
+                </button>
+              </span>
+            ))}
+
+            {/* Input Field */}
+            <input
+              type="text"
+              placeholder={emails.length === 0 ? "INPUT_EMAIL_COORDINATE..." : ""}
+              className="
+                flex-1 min-w-[200px] border-none outline-none bg-transparent
+                text-xs font-mono text-slate-800 dark:text-white 
+                placeholder:text-slate-400 dark:placeholder:text-slate-600
+                uppercase tracking-wider
+              "
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              onKeyDown={handleInputKeyDown}
+            />
+          </div>
+        </div>
+
+        {/* Execution Row */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2">
+            <div className="flex items-center gap-2">
+                <Terminal size={12} className="text-slate-400" />
+                <p className="text-[9px] font-mono text-slate-500 uppercase tracking-tighter">
+                  Status: {hasEmails ? `${emails.length} Addresses Ready` : "Awaiting Input"}
+                </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleSendInvites}
+              disabled={!hasEmails}
+              className={`
+                flex items-center justify-center gap-2 px-6 py-3
+                text-[10px] font-black uppercase tracking-widest
+                transition-all duration-200
+                ${
+                  hasEmails
+                    ? "bg-brand-600 text-white hover:bg-brand-500 shadow-lg shadow-brand-500/10"
+                    : "bg-slate-100 dark:bg-white/5 text-slate-400 cursor-not-allowed border border-slate-200 dark:border-white/10"
+                }
+              `}
+              style={hasEmails ? { clipPath: 'polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px)' } : {}}
+            >
+              <Send size={14} />
+              Dispatch Protocols
+            </button>
+        </div>
       </div>
+
+      {/* Decorative Bottom Detail */}
+      <div className="absolute bottom-0 left-0 w-2 h-2 border-t border-r border-slate-200 dark:border-white/10"></div>
     </div>
   );
 }

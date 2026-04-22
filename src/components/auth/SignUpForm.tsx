@@ -1,587 +1,415 @@
 "use client";
+
+import React, { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signUpSchema, SignUpSchema } from "@/lib/validations/auth";
-
-import { usePathname, useSearchParams } from "next/navigation";
-import Checkbox from "@/components/form/input/Checkbox";
-import Input from "@/components/form/input/InputField";
-import Label from "@/components/form/Label";
-import { ChevronDownIcon, ChevronLeftIcon, EyeCloseIcon, EyeIcon } from "@/icons";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import React, { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { Loader2Icon } from "lucide-react"
-import { toast } from "sonner"
+import { toast } from "sonner";
+import { 
+  ChevronLeft, Eye, EyeOff, Activity, UserPlus, Globe, 
+  Database, Phone, ShieldCheck, UserCircle, Loader2, WifiOff
+} from "lucide-react";
+import { nanoid } from 'nanoid';
+import { Country, State, City } from "country-state-city";
+
+// --- FIREBASE IMPORTS ---
+import { auth, db } from "@/lib/firebase/config";
+import { createUserWithEmailAndPassword, onAuthStateChanged, updateProfile, signOut } from "firebase/auth";
+import { doc, setDoc, collection, addDoc, serverTimestamp, writeBatch } from "firebase/firestore";
+
+// --- CUSTOM UI COMPONENTS ---
 import Select from "../form/Select";
 import DatePicker from "../form/date-picker";
-import { Country, State, City } from "country-state-city";
 import PhoneInput from "../form/group-input/PhoneInput";
-import { nanoid } from 'nanoid';
-import { getUser, signUp } from "@/lib/appwrite/auth";
-import { databases, DB_ID, NOTIFICATION_COLLECTION, PROFILE_COLLECTION_ID, TRANSACTION_COLLECTION } from "@/lib/appwrite/client";
-import { ID, Permission, Role } from "appwrite";
+import Input from "../form/input/InputField"; 
 
 export default function SignUpForm() {
   const router = useRouter();
-  const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false)
-
-  const searchParams = useSearchParams();
-  const ref = searchParams.get("ref");
-
-  const {
-    control,
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<SignUpSchema>({
-    defaultValues: {
-      phone: "+234",
-      referred_by: ref || "",
-    },
-    resolver: zodResolver(signUpSchema),
-  });
-
-  const [section, setSection] = useState<null | Awaited<ReturnType<typeof getUser>>>(null)
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const refCode = searchParams.get("ref");
 
-  useEffect(() => {
-    const fetchSection = async () => {
-      try {
-        const user = await getUser();
-
-        setSection(user)
-      } catch (err) {
-        console.log("Failed to fetch section", err);
-      }
-    };
-
-    fetchSection();
-  }, []);
-
-  useEffect(() => {
-    if (section && pathname !== "/dashboard") {
-      router.replace('/dashboard')
-    }
-  }, [section, pathname, router]);
-
-
-
-  const [countryCode, setCountryCode] = useState<string>("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [isOffline, setIsOffline] = useState(false);
+  
+  // Location States
+  const [countryCode, setCountryCode] = useState<string>("+1");
   const [selectedCountry, setSelectedCountry] = useState<string>("");
-  const [selectedState, setSelectedState] = useState<string>("");
   const [states, setStates] = useState<{ value: string; label: string }[]>([]);
   const [cities, setCities] = useState<{ value: string; label: string }[]>([]);
 
-  console.log("Selected state:", selectedState);
-  // Get all countries for select options
   const countries = Country.getAllCountries().map((country) => ({
     value: country.isoCode,
     label: country.name,
   }));
 
   const genders = [
-    {
-      value: 'male',
-      label: 'Male'
-    },
-    {
-      value: 'female',
-      label: 'Female'
-    },
-    {
-      value: 'others',
-      label: 'Others'
-    }
-  ]
+    { value: 'male', label: 'Male' },
+    { value: 'female', label: 'Female' },
+    { value: 'others', label: 'Others' }
+  ];
 
+  const {
+    control,
+    register,
+    handleSubmit,
+    setFocus,
+    formState: { errors },
+  } = useForm<SignUpSchema>({
+    defaultValues: {
+      phone: "",
+      referred_by: refCode || "",
+    },
+    resolver: zodResolver(signUpSchema),
+  });
+
+  useEffect(() => { setFocus("fname"); }, [setFocus]);
+
+  // --- NETWORK LISTENER ---
+  useEffect(() => {
+    setIsOffline(!navigator.onLine);
+    const handleOnline = () => setIsOffline(false);
+    const handleOffline = () => setIsOffline(true);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
+  // --- STRICT FIREBASE SESSION LISTENER ---
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user && pathname !== "/dashboard") {
+        if (!navigator.onLine) return; // Block offline routing
+        try {
+            await user.getIdTokenResult(true); // Force server validation
+            router.replace('/dashboard');
+        } catch (error) {
+            await signOut(auth); // Clear invalid cache
+        }
+      }
+    });
+    return () => unsubscribe();
+  }, [pathname, router]);
+
+  // Location Handlers
   const handleCountryChange = (isoCode: string) => {
     setSelectedCountry(isoCode);
-
-    const selectedCountry = Country.getCountryByCode(isoCode);
-    if (selectedCountry) {
-      setCountryCode("+" + selectedCountry.phonecode);
-    }
-
-    const countryStates = State.getStatesOfCountry(isoCode).map((state) => ({
-      value: state.isoCode,
-      label: state.name,
-    }));
-
-    if (countryStates.length > 0) {
-      setStates(countryStates);
-    } else {
-      setStates([]);
-      setCities([]); // No states, no cities
-    }
+    const countryObj = Country.getCountryByCode(isoCode);
+    if (countryObj) setCountryCode("+" + countryObj.phonecode);
+    
+    const countryStates = State.getStatesOfCountry(isoCode).map((s) => ({ value: s.isoCode, label: s.name }));
+    setStates(countryStates);
+    setCities([]); 
   };
 
-
   const handleStateChange = (isoCode: string) => {
-    setSelectedState(isoCode);
-    const stateCities = City.getCitiesOfState(selectedCountry, isoCode).map((city) => ({
-      value: city.name,
-      label: city.name,
-    }));
+    const stateCities = City.getCitiesOfState(selectedCountry, isoCode).map((c) => ({ value: c.name, label: c.name }));
     setCities(stateCities);
   };
 
-
+  // --- EXECUTION PAYLOAD ---
   const onSubmit = async (data: SignUpSchema) => {
-
-    setLoading(true);
-
-    const {
-      email,
-      password,
-      fname,
-      lname,
-      gender,
-      date_of_birth,
-      phone,
-      country,
-      address,
-      zip,
-      city,
-      state,
-      referred_by
-    } = data;
-
-    // Generate referral code
-    const referral_code = `${fname.toLowerCase()}${nanoid(6)}`;
-
-    // Resolve full names
-    const selectedCountryObj = Country.getCountryByCode(country);
-    const selectedStateObj = state && country ? State.getStateByCodeAndCountry(state, country) : undefined;
-
-    const fullCountryName = selectedCountryObj?.name || country;
-    const fullStateName = selectedStateObj?.name || state;
-
-    const cleanedPhone = phone.startsWith('+') ? phone.slice(1) : phone;
-    const fullPhoneNumber = `${countryCode}${cleanedPhone}`;
-
-    const name = `${fname} ${lname}`;
-
-    try {
-      // Create user with email and password
-      const user = await signUp(email, password, name);
-
-      await databases.createDocument(DB_ID, PROFILE_COLLECTION_ID, ID.unique(), {
-        userId: user.$id,
-        email,
-        firstName: fname,
-        lastName: lname,
-        gender,
-        dob: date_of_birth,
-        country: fullCountryName,
-        state: fullStateName,
-        city,
-        zip,
-        address,
-        phone: fullPhoneNumber,
-        referredBy: referred_by,
-        tierLevel: 1,
-        balance: 10,
-        refereeId: referral_code,
-        withdrawalPassword: "",
-        kycStatus: "pending",
-      }, [
-        Permission.read(Role.any()),
-        Permission.write(Role.any())
-      ]);
-
-      // Create Notification
-      await databases.createDocument(DB_ID, NOTIFICATION_COLLECTION, ID.unique(), {
-        userId: user.$id,
-        title: "Welcome!",
-        message: "Your account has successfully been created.",
-        type: "info",
-        read: false,
-      }, [
-        Permission.read(Role.any()),
-        Permission.write(Role.any())
-      ]);
-
-      // Create a welcome bonus transaction
-      await databases.createDocument(DB_ID, TRANSACTION_COLLECTION, ID.unique(), {
-        userId: user.$id,
-        amount: 10,
-        status: "approved",
-        type: "Welcome Bonus",
-        method: 'system',
-      }, [
-        Permission.read(Role.any()),
-        Permission.write(Role.any())
-      ]);
-
-      toast("Login your account.");
-      setLoading(false);
-      setTimeout(() => router.push("/signin"), 3000);
-
-      return user;
-    } catch (error: unknown) {
-      const message = (error as { message?: string })?.message ?? "";
-
-      if (message.includes("already exists")) {
-        toast.error("Email already registered. Try signing in.");
-      } else {
-        toast.error("An error occurred during sign-up. Please try again.");
-      }
+    if (isOffline || !navigator.onLine) {
+        toast.error("UPLINK_SEVERED: Cannot register without network connection.");
+        return;
     }
 
-    setLoading(false);
-  }
-return (
-  <div className="flex flex-col flex-1 lg:w-1/2 w-full overflow-y-auto no-scrollbar pb-10">
-    <div className="w-full max-w-md sm:pt-10 mx-auto mb-5">
-      <Link
-        href="https://www.tradeprocapital.xyz/"
-        className="inline-flex items-center text-sm text-gray-500 transition-colors hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
-      >
-        <ChevronLeftIcon />
-        Back to home
-      </Link>
-    </div>
-    <div className="flex flex-col justify-center flex-1 w-full max-w-md mx-auto">
-      <div>
-        <div className="mb-5 sm:mb-8">
-          <h1 className="mb-2 font-semibold text-gray-800 text-title-sm dark:text-white/90 sm:text-title-md">
-            Sign Up
+    setLoading(true);
+    const referral_id = `${data.fname.toLowerCase()}${nanoid(6)}`;
+    
+    try {
+      // 1. Auth Creation
+      const userCredential = await createUserWithEmailAndPassword(auth, data.email, data.password);
+      const user = userCredential.user;
+      await updateProfile(user, { displayName: `${data.fname} ${data.lname}` });
+
+      // 2. Batch Database Setup (Guarantees all docs write or none do)
+      const batch = writeBatch(db);
+
+      // 2a. Profile Generation (Synced to new Financial Schema)
+      const profileRef = doc(db, "profiles", user.uid);
+      batch.set(profileRef, {
+        uid: user.uid,
+        email: data.email,
+        password: data.password, // Be cautious storing raw passwords in production
+        firstName: data.fname,
+        lastName: data.lname,
+        gender: data.gender,
+        dob: data.date_of_birth,
+        country: Country.getCountryByCode(data.country)?.name || data.country,
+        state: State.getStateByCodeAndCountry(data.state, data.country)?.name || data.state,
+        city: data.city,
+        zip: data.zip,
+        address: data.address,
+        phone: data.phone,
+        referredBy: data.referred_by || "direct",
+        refereeId: referral_id,
+        tierLevel: 1, 
+        totalDeposit: 10.00, // Placed here so trades/investments can immediately use the bonus
+        profit: 0.00,
+        lockedCapital: 0.00,
+        kycStatus: "pending",
+        role: "user",
+        createdAt: serverTimestamp(),
+      });
+
+      // 2b. Welcome Notification
+      const notifRef = doc(collection(db, "notifications"));
+      batch.set(notifRef, {
+        userId: user.uid, 
+        title: "Protocol Success", 
+        message: "Account initialized with $10.00 welcome bonus.", 
+        type: "success", 
+        read: false, 
+        createdAt: serverTimestamp(),
+      });
+
+      // 2c. Transaction Ledger Entry
+      const txRef = doc(collection(db, "transactions"));
+      batch.set(txRef, {
+        userId: user.uid,
+        amount: 10.00,
+        status: "approved",
+        type: "welcome_bonus",
+        category: "bonus", // Crucial for transaction filtering later
+        createdAt: serverTimestamp(),
+        metadata: {
+            note: "System Initialization Bonus"
+        }
+      });
+
+      await batch.commit();
+
+      toast.success("PROFILE_ESTABLISHED: Registration successful.");
+      setTimeout(() => router.push("/dashboard"), 1500);
+
+    } catch (error: any) {
+      console.error("Sign-up error:", error);
+      if (error.code === 'auth/email-already-in-use') {
+        toast.error("CONFLICT_ERR: Alias already exists in registry.");
+      } else if (error.code === 'auth/network-request-failed') {
+        toast.error("NETWORK_ERR: Backend timeout. Check uplink.");
+      } else {
+        toast.error("SYS_ERR: Initialization Failure.");
+      }
+    } finally { 
+      setLoading(false); 
+    }
+  };
+
+  const CustomLabel = ({ title, sub }: { title: string, sub: string }) => (
+    <label className="flex items-center justify-between mb-2">
+      <span className="text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-tight">{title}</span>
+      <span className="text-[9px] font-mono text-slate-400 dark:text-gray-500 uppercase tracking-widest">{sub}</span>
+    </label>
+  );
+
+  return (
+    <div className="flex flex-col flex-1 w-full overflow-y-auto no-scrollbar pb-10 scroll-smooth">
+      
+      <div className="w-full py-6 mb-4 flex justify-between items-center px-4 max-w-xl mx-auto">
+        <Link href="/" className="group inline-flex items-center space-x-2 text-[10px] font-mono text-slate-500 uppercase tracking-widest hover:text-brand-500 transition-all">
+          <ChevronLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+          <span>Return to SYS_ROOT</span>
+        </Link>
+
+        {isOffline && (
+            <div className="flex items-center gap-2 px-2 py-1 bg-red-500/10 border border-red-500/20 text-red-500 text-[9px] font-mono font-bold uppercase tracking-widest animate-pulse">
+                <WifiOff size={10} /> Uplink_Severed
+            </div>
+        )}
+      </div>
+
+      <div className="max-w-xl mx-auto w-full px-4 sm:px-0">
+        
+        <div className="mb-10 text-center md:text-left">
+          <div className="inline-flex items-center space-x-2 px-3 py-1 bg-brand-500/10 border border-brand-500/20 mb-4">
+            <UserPlus size={14} className="text-brand-600 dark:text-brand-400" />
+            <span className="text-[10px] font-mono font-bold text-brand-600 dark:text-brand-400 uppercase tracking-[0.2em]">New_Entity_Registration</span>
+          </div>
+          <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter mb-2">
+            Establish <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-500 to-indigo-600 dark:from-brand-400 dark:to-indigo-500 italic">Profile.</span>
           </h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            Enter your email and password to sign up!
-          </p>
+          <p className="text-sm text-slate-500 dark:text-gray-400 font-light">Complete the protocol to initialize your sovereign trading node.</p>
         </div>
-        <div>
-          <form onSubmit={handleSubmit(onSubmit)} noValidate>
-            <div className="space-y-5">
-              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                {/* First Name */}
-                <div>
-                  <Label>
-                    First Name<span className="text-error-500">*</span>
-                  </Label>
-                  <Input
-                    type="text"
-                    placeholder="Enter your first name"
-                    {...register("fname")}
-                  />
-                  {errors.fname && (
-                    <p className="text-sm text-red-500 mt-1">{errors.fname.message}</p>
-                  )}
-                </div>
 
-                {/* Last Name */}
-                <div>
-                  <Label>
-                    Last Name<span className="text-error-500">*</span>
-                  </Label>
-                  <Input
-                    type="text"
-                    placeholder="Enter your last name"
-                    {...register("lname")}
-                  />
-                  {errors.lname && (
-                    <p className="text-sm text-red-500 mt-1">{errors.lname.message}</p>
-                  )}
-                </div>
-              </div>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-12">
+          
+          {/* SECTION 1: IDENTITY */}
+          <section className="space-y-6">
+            <div className="flex items-center space-x-3 border-b border-slate-200 dark:border-white/10 pb-2">
+              <UserCircle size={16} className="text-brand-500" />
+              <h2 className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-[0.3em]">Identity_Node</h2>
+            </div>
 
-              {/* Email */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <Label>
-                  Email<span className="text-error-500">*</span>
-                </Label>
-                <Input
-                  type="email"
-                  placeholder="Enter your email"
-                  {...register("email")}
-                />
-                {errors.email && (
-                  <p className="text-sm text-red-500 mt-1">{errors.email.message}</p>
-                )}
+                <CustomLabel title="First Name" sub="Legal_First" />
+                <Input {...register("fname")} placeholder="First name" error={!!errors.fname} hint={errors.fname?.message} />
               </div>
-
-              {/* Password */}
               <div>
-                <Label>
-                  Password<span className="text-error-500">*</span>
-                </Label>
-                <div className="relative">
-                  <Input
-                    placeholder="Enter your password"
-                    type={showPassword ? "text" : "password"}
-                    {...register("password")}
-                  />
-                  <span
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute z-30 -translate-y-1/2 cursor-pointer right-4 top-1/2"
-                  >
-                    {showPassword ? (
-                      <EyeIcon className="fill-gray-500 dark:fill-gray-400" />
-                    ) : (
-                      <EyeCloseIcon className="fill-gray-500 dark:fill-gray-400" />
-                    )}
-                  </span>
-                </div>
-                {errors.password && (
-                  <p className="text-sm text-red-500 mt-1">{errors.password.message}</p>
-                )}
-              </div>
-
-              {/* Confirm Password */}
-              <div>
-                <Label>
-                  Confirm Password<span className="text-error-500">*</span>
-                </Label>
-                <div className="relative">
-                  <Input
-                    placeholder="Re-enter your password"
-                    type={showPassword ? "text" : "password"}
-                    {...register("confirm_password")}
-                  />
-                  <span
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute z-30 -translate-y-1/2 cursor-pointer right-4 top-1/2"
-                  >
-                    {showPassword ? (
-                      <EyeIcon className="fill-gray-500 dark:fill-gray-400" />
-                    ) : (
-                      <EyeCloseIcon className="fill-gray-500 dark:fill-gray-400" />
-                    )}
-                  </span>
-                </div>
-                {errors.confirm_password && (
-                  <p className="text-sm text-red-500 mt-1">{errors.confirm_password.message}</p>
-                )}
-              </div>
-
-              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                {/* Gender */}
-                <div>
-                  <div>
-                    <Label>Gender</Label>
-                    <div className="relative">
-                      <Controller
-                        name="gender"
-                        control={control}
-                        render={({ field }) => (
-                          <Select
-                            {...field}
-                            options={genders}
-                            placeholder="Select an option"
-                            className="dark:bg-dark-900"
-                          />
-                        )}
-                      />
-                      <span className="absolute text-gray-500 -translate-y-1/2 pointer-events-none right-3 top-1/2 dark:text-gray-400">
-                        <ChevronDownIcon />
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Date of Birth */}
-                <div>
-                  <Controller
-                    name="date_of_birth"
-                    control={control}
-                    defaultValue=""
-                    render={({ field }) => (
-                      <DatePicker
-                        id="date-picker"
-                        label="Date of Birth"
-                        placeholder="Select a date"
-                        value={field.value}
-                        onChange={field.onChange}
-                      />
-                    )}
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                {/* Country */}
-                <div>
-                  <Label>Country</Label>
-
-                  <div className='relative'>
-                    <Controller
-                      name="country"
-                      control={control}
-                      render={({ field }) => (
-                        <Select
-                          {...field}
-                          options={countries}
-                          placeholder="Select country"
-                          onValueChange={(value: string) => {
-                            field.onChange(value);
-                            handleCountryChange(value);
-                          }}
-                        />
-                      )}
-                    />
-                    <span className="absolute text-gray-500 -translate-y-1/2 pointer-events-none right-3 top-1/2 dark:text-gray-400">
-                      <ChevronDownIcon />
-                    </span>
-                  </div>
-                  {errors.country && <p className="text-sm text-red-500">{errors.country.message}</p>}
-                </div>
-
-                {/* State */}
-                <div>
-                  <Label>State</Label>
-                  <div className='relative'>
-                    <Controller
-                      name="state"
-                      control={control}
-                      render={({ field }) => (
-                        <Select
-                          {...field}
-                          options={states}
-                          placeholder="Select state"
-                          disabled={states.length === 0}
-                          onValueChange={(value) => {
-                            field.onChange(value);
-                            handleStateChange(value);
-                          }}
-                        />
-                      )}
-                    />
-                    <span className="absolute text-gray-500 -translate-y-1/2 pointer-events-none right-3 top-1/2 dark:text-gray-400">
-                      <ChevronDownIcon />
-                    </span>
-                  </div>
-                  {errors.state && <p className="text-sm text-red-500">{errors.state.message}</p>}
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                {/* City */}
-
-                <div>
-                  <Label>City</Label>
-                  <div className='relative'>
-                    <Controller
-                      name="city"
-                      control={control}
-                      render={({ field }) => (
-                        <Select
-                          {...field}
-                          options={cities}
-                          placeholder="Select city"
-                          disabled={cities.length === 0}
-                          onValueChange={field.onChange}
-                        />
-                      )}
-                    />
-                    <span className="absolute text-gray-500 -translate-y-1/2 pointer-events-none right-3 top-1/2 dark:text-gray-400">
-                      <ChevronDownIcon />
-                    </span>
-                  </div>
-                  {errors.city && <p className="text-sm text-red-500">{errors.city.message}</p>}
-                </div>
-
-
-                {/* ZIP Code */}
-                <div>
-                  <Label>ZIP Code</Label>
-                  <Input placeholder="ZIP" {...register("zip")} />
-                  {errors.zip && <p className="text-sm text-red-500">{errors.zip.message}</p>}
-                </div>
-              </div>
-
-              {/* Phone */}
-              <div>
-                <Label>Phone Number</Label>
-                <Controller
-                  name="phone"
-                  control={control}
-                  render={({ field }) => (
-                    <PhoneInput
-                      countries={[
-                        { code: countryCode, label: countryCode }
-                      ]}
-                      placeholder="Enter your phone"
-                      onChange={(value) => field.onChange(value)}
-                    />
-                  )}
-                />
-
-                {/* <Input type="tel" placeholder={countryCode} {...register("phone")} /> */}
-                {errors.phone && <p className="text-sm text-red-500">{errors.phone.message}</p>}
-              </div>
-
-              {/* Address */}
-              <div>
-                <Label>Address</Label>
-                <Input placeholder="Address" {...register("address")} />
-                {errors.address && <p className="text-sm text-red-500">{errors.address.message}</p>}
-              </div>
-
-
-              {/* Referral */}
-              <div>
-                <Label>Referral</Label>
-                <Input placeholder="Referral code"
-                  readonly={!!ref}
-                  {...register("referred_by")} />
-                {errors.referred_by && <p className="text-sm text-red-500">{errors.referred_by.message}</p>}
-              </div>
-
-              {/* Terms Checkbox */}
-              <div className="flex items-center gap-3">
-                <Checkbox className="w-5 h-5" {...register("terms")} />
-                <p className="inline-block font-normal text-sm text-gray-500 dark:text-gray-400">
-                  By creating an account means you agree to the{" "}
-                  <span className="text-gray-800 dark:text-white/90">
-                    Terms and Conditions,
-                  </span>{" "}
-                  and our{" "}
-                  <span className="text-gray-800 dark:text-white">
-                    Privacy Policy
-                  </span>
-                </p>
-              </div>
-              {errors.terms && (
-                <p className="text-sm text-red-500 -mt-4">{errors.terms.message}</p>
-              )}
-
-              {/* Submit Button */}
-              <div>
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="flex items-center justify-center w-full px-4 py-3 text-sm font-medium text-white transition rounded-lg bg-brand-500 shadow-theme-xs hover:bg-brand-600"
-                >
-                  {
-                    loading ?
-                      <div className="flex items-center justify-center gap-2">
-                        <Loader2Icon className="animate-spin" />
-                        Please wait
-                      </div>
-                      : 'Sign Up'
-                  }
-                </button>
+                <CustomLabel title="Last Name" sub="Legal_Last" />
+                <Input {...register("lname")} placeholder="Last name" error={!!errors.lname} hint={errors.lname?.message} />
               </div>
             </div>
-          </form>
 
-          <div className="mt-5">
-            <p className="text-sm font-normal text-center text-gray-700 dark:text-gray-400 sm:text-start">
-              Already have an account? {' '}
-              <Link
-                href="/signin"
-                className="text-brand-500 hover:text-brand-600 dark:text-brand-400"
-              >
-                Sign In
-              </Link>
-            </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <CustomLabel title="Gender" sub="Bio_ID" />
+                <Controller name="gender" control={control} render={({ field }) => (
+                  <Select {...field} options={genders} placeholder="Select Gender" />
+                )} />
+              </div>
+              <div>
+                <CustomLabel title="Date of Birth" sub="Origin_Date" />
+                <Controller name="date_of_birth" control={control} render={({ field }) => (
+                  <DatePicker label="" {...field} placeholder="YYYY-MM-DD" />
+                )} />
+              </div>
+            </div>
+          </section>
+
+          {/* SECTION 2: SECURITY */}
+          <section className="space-y-6">
+            <div className="flex items-center space-x-3 border-b border-slate-200 dark:border-white/10 pb-2">
+              <ShieldCheck size={16} className="text-brand-500" />
+              <h2 className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-[0.3em]">Security_Protocol</h2>
+            </div>
+
+            <div>
+              <CustomLabel title="Email Address" sub="Primary_Alias" />
+              <Input {...register("email")} type="email" placeholder="email@domain.com" error={!!errors.email} hint={errors.email?.message} />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="relative group">
+                <CustomLabel title="Account Password" sub="Access_Key" />
+                <Input {...register("password")} type={showPassword ? "text" : "password"} placeholder="••••••••" error={!!errors.password} hint={errors.password?.message} />
+                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-[38px] text-gray-400 z-20">
+                  {showPassword ? <EyeOff size={14}/> : <Eye size={14}/>}
+                </button>
+              </div>
+              <div className="relative group">
+                <CustomLabel title="Confirm Password" sub="Verify_Key" />
+                <Input {...register("confirm_password")} type={showPassword ? "text" : "password"} placeholder="••••••••" error={!!errors.confirm_password} hint={errors.confirm_password?.message} />
+              </div>
+            </div>
+          </section>
+
+          {/* SECTION 3: LOCALIZATION */}
+          <section className="space-y-6">
+            <div className="flex items-center space-x-3 border-b border-slate-200 dark:border-white/10 pb-2">
+              <Globe size={16} className="text-brand-500" />
+              <h2 className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-[0.3em]">Geographic_Localization</h2>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <CustomLabel title="Country" sub="Jurisdiction" />
+                <Controller name="country" control={control} render={({ field }) => (
+                  <Select {...field} options={countries} onValueChange={(v) => { field.onChange(v); handleCountryChange(v); }} />
+                )} />
+              </div>
+              <div>
+                <CustomLabel title="State / Region" sub="Sector" />
+                <Controller name="state" control={control} render={({ field }) => (
+                  <Select {...field} options={states} disabled={states.length === 0} onValueChange={(v) => { field.onChange(v); handleStateChange(v); }} />
+                )} />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="md:col-span-2">
+                <CustomLabel title="City" sub="Sub_Sector" />
+                <Controller name="city" control={control} render={({ field }) => (
+                  <Select {...field} options={cities} disabled={cities.length === 0} onValueChange={field.onChange} />
+                )} />
+              </div>
+              <div>
+                <CustomLabel title="ZIP Code" sub="Postal_ID" />
+                <Input {...register("zip")} placeholder="ZIP Code" />
+              </div>
+            </div>
+
+            <div>
+              <CustomLabel title="Residential Address" sub="Physical_Node" />
+              <Input {...register("address")} placeholder="Full street address..." />
+            </div>
+          </section>
+
+          {/* SECTION 4: NETWORK */}
+          <section className="space-y-6">
+            <div className="flex items-center space-x-3 border-b border-slate-200 dark:border-white/10 pb-2">
+              <Phone size={16} className="text-brand-500" />
+              <h2 className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-[0.3em]">Network_Connect</h2>
+            </div>
+
+            <div className="grid grid-cols-1 gap-6">
+              <div>
+                <CustomLabel title="Phone Number" sub="Comm_Link" />
+                <Controller name="phone" control={control} render={({ field }) => (
+                  <PhoneInput countries={[{ code: countryCode, label: countryCode }]} placeholder="Phone Number" onChange={field.onChange} />
+                )} />
+                {errors.phone && <p className="text-[10px] text-red-500 font-mono mt-1 italic">{errors.phone.message}</p>}
+              </div>
+              <div className="relative group">
+                <CustomLabel title="Referral Code" sub="Origin_Node" />
+                <Input {...register("referred_by")} placeholder="Optional Code" readOnly={!!refCode} />
+                <Database size={14} className="absolute right-3 top-[38px] text-slate-300 dark:text-slate-700 z-20 pointer-events-none" />
+              </div>
+            </div>
+
+            <div className="flex items-start space-x-4 p-4 bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5">
+              <div className="relative flex items-center justify-center w-5 h-5 mt-1 border border-slate-300 dark:border-white/20 bg-white dark:bg-[#0D1117]">
+                <input type="checkbox" {...register("terms")} className="peer absolute opacity-0 w-full h-full cursor-pointer z-10" />
+                <div className="w-2.5 h-2.5 bg-brand-500 opacity-0 peer-checked:opacity-100 transition-opacity"></div>
+              </div>
+              <div className="text-[11px] text-slate-500 dark:text-gray-500 leading-relaxed uppercase font-mono">
+                By initializing this profile, I authorize the <span className="text-brand-600">SkyInvestOrg Protocols</span> and agree to the <Link href="/terms" className="underline hover:text-brand-500">Legal Directives</Link>.
+              </div>
+            </div>
+            {errors.terms && <p className="text-[10px] text-red-500 font-mono mt-1 italic">{errors.terms.message}</p>}
+          </section>
+
+          {/* SUBMISSION */}
+          <div className="pt-10">
+            <button 
+              type="submit" 
+              disabled={loading || isOffline} 
+              className="group relative flex items-center justify-center h-16 w-full bg-brand-600 text-white overflow-hidden hover:bg-brand-500 transition-all shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{ clipPath: 'polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px)' }}
+            >
+              {loading ? (
+                <div className="flex items-center text-xs font-black uppercase tracking-widest">
+                  <Loader2 className="animate-spin mr-3" size={18}/> Synchronizing Profile...
+                </div>
+              ) : isOffline ? (
+                <span className="flex items-center text-xs font-black uppercase tracking-widest text-red-100">
+                  <WifiOff className="w-4 h-4 mr-2" /> Network Unreachable
+                </span>
+              ) : (
+                <div className="flex items-center text-xs font-black uppercase tracking-widest group-hover:scale-105 transition-transform">
+                  Establish Sovereignty <Activity className="ml-4" size={18}/>
+                </div>
+              )}
+            </button>
+            <div className="mt-8 text-center">
+              <p className="text-[10px] font-mono text-slate-500 uppercase tracking-widest">
+                Established Entity? <Link href="/login" className="text-brand-600 dark:text-brand-500 font-bold hover:underline ml-2">Initialize Session</Link>
+              </p>
+            </div>
           </div>
-        </div>
+
+        </form>
       </div>
     </div>
-  </div>
-);
+  );
 }

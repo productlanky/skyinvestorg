@@ -3,14 +3,13 @@
 import React, { useState } from "react";
 import { useModal } from "../../hooks/useModal";
 import { Modal } from "../ui/modal";
-import Button from "../ui/button/Button";
-import Input from "../form/input/InputField";
-import Label from "../form/Label";
+import { MapPin, Globe, Navigation, Edit3, X, Save } from "lucide-react";
 import { ProfileType } from "./ProfilePage";
 import { toast } from "sonner"; 
-import { databases, DB_ID, PROFILE_COLLECTION_ID } from "@/lib/appwrite/client";
-import { Query } from "appwrite";
-import { getUser } from "@/lib/appwrite/auth";
+
+// --- FIREBASE IMPORTS ---
+import { auth, db } from "@/lib/firebase/config";
+import { doc, updateDoc } from "firebase/firestore";
 
 export default function UserAddressCard({ country, city, state, zip, address, refresh }: ProfileType) {
   const { isOpen, openModal, closeModal } = useModal();
@@ -23,6 +22,8 @@ export default function UserAddressCard({ country, city, state, zip, address, re
     address: address ?? "",
   });
 
+  const [isSaving, setIsSaving] = useState(false);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
@@ -30,126 +31,146 @@ export default function UserAddressCard({ country, city, state, zip, address, re
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSaving(true);
 
     try {
-      const user = await getUser();
+      const user = auth.currentUser;
+      if (!user) throw new Error("AUTH_NODE_OFFLINE");
 
-      // Fetch the profile document by userId
-      const res = await databases.listDocuments(DB_ID, PROFILE_COLLECTION_ID, [
-        Query.equal("userId", user.$id),
-      ]);
+      // Update the profile document directly by user UID
+      const profileRef = doc(db, "profiles", user.uid);
+      
+      // Map form fields to the keys expected in your Firestore document
+      await updateDoc(profileRef, {
+        country: form.country,
+        city: form.city,
+        state: form.state,
+        zip: form.zip,
+        address: form.address,
+        updatedAt: new Date()
+      });
 
-      if (res.documents.length === 0) {
-        toast.error("Profile not found.");
-        return;
-      }
-
-      const documentId = res.documents[0].$id;
-
-      // Update the document
-      await databases.updateDocument(
-        DB_ID,
-        PROFILE_COLLECTION_ID,
-        documentId,
-        form
-      );
-
-      toast.success("Address updated successfully.");
+      toast.success("COORDINATES_UPDATED: Geographic node sync complete.");
       closeModal();
       refresh?.();
     } catch (error) {
       console.error("Update failed:", error);
-      toast.error("Failed to update address.");
+      toast.error("SYNC_FAILURE: Geographic node update aborted.");
+    } finally {
+      setIsSaving(false);
     }
   };
 
-
   return (
     <>
-      <div className="p-5 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6">
-        <div className="capitalize flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-          <div>
-            <h4 className="text-lg font-semibold text-gray-800 dark:text-white/90 lg:mb-6">
-              Address
+      {/* --- DISPLAY CARD --- */}
+      <div className="bg-white dark:bg-[#0D1117] border border-slate-200 dark:border-white/5 p-6 relative group overflow-hidden">
+        <div className="absolute top-0 right-0 p-2 bg-brand-500/5 text-[9px] font-mono text-brand-500 border-l border-b border-white/5 uppercase tracking-widest">
+            GEOGRAPHIC_NODE
+        </div>
+
+        <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-8">
+          <div className="flex-1">
+            <h4 className="text-sm font-black uppercase tracking-[0.2em] text-slate-900 dark:text-white mb-8 flex items-center gap-2">
+              <MapPin size={16} className="text-brand-500" /> Physical Coordinates
             </h4>
 
-            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-7 2xl:gap-x-32">
-              <div>
-                <p className="mb-2 text-xs text-gray-500 dark:text-gray-400">Country</p>
-                <p className="text-sm font-medium text-gray-800 dark:text-white/90">{form.country}</p>
-              </div>
-              <div>
-                <p className="mb-2 text-xs text-gray-500 dark:text-gray-400">City/State</p>
-                <p className="text-sm font-medium text-gray-800 dark:text-white/90">{form.city}, {form.state}</p>
-              </div>
-              <div>
-                <p className="mb-2 text-xs text-gray-500 dark:text-gray-400">Zip/Postal Code</p>
-                <p className="text-sm font-medium text-gray-800 dark:text-white/90">{form.zip}</p>
-              </div>
-              <div>
-                <p className="mb-2 text-xs text-gray-500 dark:text-gray-400">Address</p>
-                <p className="text-sm font-medium text-gray-800 dark:text-white/90">{form.address}</p>
-              </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-6 gap-x-12">
+              <DataNode label="Registry_Country" value={form.country} />
+              <DataNode label="City_State_Region" value={`${form.city}, ${form.state}`} />
+              <DataNode label="Postal_Index" value={form.zip} />
+              <DataNode label="Street_Address" value={form.address} />
             </div>
           </div>
 
           <button
             onClick={openModal}
-            className="flex w-full items-center justify-center gap-2 rounded-full border border-gray-300 bg-white px-4 py-3 text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200 lg:inline-flex lg:w-auto"
+            className="flex items-center justify-center gap-2 px-6 py-3 border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 text-[10px] font-black uppercase tracking-widest text-slate-700 dark:text-slate-300 hover:bg-brand-500/10 hover:border-brand-500/50 hover:text-brand-500 transition-all"
+            style={{ clipPath: 'polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px)' }}
           >
-            <svg className="fill-current" width="18" height="18" viewBox="0 0 18 18">
-              <path
-                fillRule="evenodd"
-                clipRule="evenodd"
-                d="M15.0911 2.78206C14.2125 1.90338 12.7878 1.90338 11.9092 2.78206L4.57524 10.116C4.26682 10.4244 4.0547 10.8158 3.96468 11.2426L3.31231 14.3352C3.25997 14.5833 3.33653 14.841 3.51583 15.0203C3.69512 15.1996 3.95286 15.2761 4.20096 15.2238L7.29355 14.5714C7.72031 14.4814 8.11172 14.2693 8.42013 13.9609L15.7541 6.62695C16.6327 5.74827 16.6327 4.32365 15.7541 3.44497L15.0911 2.78206ZM12.9698 3.84272C13.2627 3.54982 13.7376 3.54982 14.0305 3.84272L14.6934 4.50563C14.9863 4.79852 14.9863 5.2734 14.6934 5.56629L14.044 6.21573L12.3204 4.49215L12.9698 3.84272ZM11.2597 5.55281L5.6359 11.1766C5.53309 11.2794 5.46238 11.4099 5.43238 11.5522L5.01758 13.5185L6.98394 13.1037C7.1262 13.0737 7.25666 13.003 7.35947 12.9002L12.9833 7.27639L11.2597 5.55281Z"
-                fill=""
-              />
-            </svg>
-            Edit
+            <Edit3 size={14} /> Reconfigure
           </button>
         </div>
       </div>
 
-      <Modal isOpen={isOpen} onClose={closeModal} className="max-w-[700px] m-4">
-        <div className="relative w-full p-4 overflow-y-auto bg-white no-scrollbar rounded-3xl dark:bg-gray-900 lg:p-11">
-          <div className="px-2 pr-14">
-            <h4 className="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90">
-              Edit Address
+      {/* --- RECONFIGURE MODAL --- */}
+      <Modal isOpen={isOpen} onClose={closeModal} className="max-w-2xl m-4">
+        <div className="relative w-full bg-white dark:bg-[#0D1117] border border-brand-500/20 shadow-2xl overflow-hidden">
+          <div className="absolute top-0 right-0 p-2 bg-brand-500/5 text-[8px] font-mono text-brand-500 border-l border-b border-white/5 uppercase tracking-widest">INPUT_COORD_SYS</div>
+          
+          <div className="p-8 border-b border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-white/[0.02]">
+            <h4 className="text-lg font-black uppercase tracking-widest text-slate-900 dark:text-white flex items-center gap-3">
+              <Navigation size={20} className="text-brand-500" /> Geographic Node Config
             </h4>
-            <p className="mb-6 text-sm text-gray-500 dark:text-gray-400 lg:mb-7">
-              Update your details to keep your profile up-to-date.
+            <p className="text-[10px] font-mono text-slate-500 uppercase tracking-tighter mt-1">
+              Update physical registry details for compliance and verification.
             </p>
           </div>
 
-          <form onSubmit={handleSave} className="flex flex-col">
-            <div className="px-2 overflow-y-auto custom-scrollbar">
-              <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2">
-                {["country", "city", "state", "zip", "address"].map((field) => (
-                  <div key={field} className={field === "address" ? "lg:col-span-2" : ""}>
-                    <Label>{field[0].toUpperCase() + field.slice(1)}</Label>
-                    <Input
-                      type={field === "zip" ? "number" : "text"}
-                      name={field}
-                      className="capitalize"
-                      value={form[field as keyof typeof form]}
-                      onChange={handleChange}
-                    />
-                  </div>
-                ))}
+          <form onSubmit={handleSave} className="p-8 space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {["country", "city", "state", "zip"].map((field) => (
+                <div key={field} className="space-y-2">
+                  <label className="text-[9px] font-mono font-bold text-slate-400 uppercase tracking-widest ml-1">
+                    {field}_PROTOCOL
+                  </label>
+                  <input
+                    type={field === "zip" ? "number" : "text"}
+                    name={field}
+                    value={form[field as keyof typeof form]}
+                    onChange={handleChange}
+                    className="w-full bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/10 px-4 py-3 text-sm font-mono text-slate-900 dark:text-white outline-none focus:border-brand-500 transition-colors uppercase"
+                    placeholder={`INPUT_${field.toUpperCase()}...`}
+                  />
+                </div>
+              ))}
+              <div className="md:col-span-2 space-y-2">
+                <label className="text-[9px] font-mono font-bold text-slate-400 uppercase tracking-widest ml-1">STREET_LEVEL_ADDRESS</label>
+                <input
+                  type="text"
+                  name="address"
+                  value={form.address}
+                  onChange={handleChange}
+                  className="w-full bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/10 px-4 py-3 text-sm font-mono text-slate-900 dark:text-white outline-none focus:border-brand-500 transition-colors uppercase"
+                  placeholder="INPUT_STREET_ADDRESS..."
+                />
               </div>
             </div>
 
-            <div className="flex items-center gap-3 px-2 mt-6 lg:justify-end">
-              <Button size="sm" variant="outline" onClick={closeModal}>
-                Close
-              </Button>
-              <Button size="sm" type="submit">
-                Save Changes
-              </Button>
+            <div className="flex items-center justify-end gap-4 pt-6 border-t border-slate-200 dark:border-white/5">
+              <button 
+                type="button" 
+                onClick={closeModal}
+                className="px-6 py-3 text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors"
+              >
+                Abort
+              </button>
+              <button 
+                type="submit" 
+                disabled={isSaving}
+                className="bg-brand-600 hover:bg-brand-500 text-white px-8 py-3 text-[10px] font-black uppercase tracking-widest disabled:opacity-50 shadow-lg shadow-brand-500/20"
+                style={{ clipPath: 'polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px)' }}
+              >
+                {isSaving ? "Syncing..." : "Execute_Update"}
+              </button>
             </div>
           </form>
         </div>
       </Modal>
     </>
   );
+}
+
+// --- SUB-COMPONENT FOR DATA DISPLAY ---
+function DataNode({ label, value }: { label: string; value: string }) {
+    return (
+        <div className="space-y-1">
+            <p className="text-[9px] font-mono font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                <Globe size={10} className="opacity-50" /> {label}
+            </p>
+            <p className="text-xs font-black text-slate-800 dark:text-slate-100 uppercase tracking-wide">
+                {value || "NOT_ASSIGNED"}
+            </p>
+        </div>
+    );
 }

@@ -1,427 +1,286 @@
 "use client";
-import React, { useEffect, useRef, useState, useCallback } from "react";
-import { HiArrowDownTray, HiArrowTrendingUp, HiArrowUpTray } from "react-icons/hi2";
-import { TbLayoutDashboard } from "react-icons/tb";
-import { FaExchangeAlt } from "react-icons/fa";
-import { HiCog6Tooth } from "react-icons/hi2";
-import { FiUserPlus } from "react-icons/fi";
-import { BiHistory } from "react-icons/bi";
-import { BsTrophy } from "react-icons/bs";
-import Link from "next/link"; 
-import { usePathname } from "next/navigation";
-import { useSidebar } from "../context/SidebarContext";
-import { BoxCubeIcon, ChevronDownIcon, PieChartIcon, PlugInIcon } from "../icons";
-import { getUser } from "@/lib/appwrite/auth";
-import { SiStockx } from "react-icons/si";
-import { RiAdminFill, RiStockFill } from "react-icons/ri";
 
-type NavItem = {
+import React, { useEffect, useState } from "react";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { useSidebar } from "@/context/SidebarContext";
+import { 
+  LayoutDashboard, Receipt, Target, PieChart, Activity, 
+  LineChart, Users, Bot, Zap, PlusCircle, MinusCircle, 
+  User, Network, Headphones, LogOut, Wallet, LucideIcon
+} from "lucide-react";
+
+// --- FIREBASE IMPORTS ---
+import { auth, db } from "@/lib/firebase/config";
+import { onAuthStateChanged, signOut } from "firebase/auth";
+import { collection, query, where, doc, onSnapshot } from "firebase/firestore";
+import { fetchTeslaPrice } from "@/lib/appwrite/auth"; // Ensures we get live share values
+
+// --- TYPESCRIPT INTERFACES ---
+interface NavBadge {
+  text: string;
+  color: string;
+  pulse?: boolean; 
+}
+
+interface NavItem {
   name: string;
-  icon: React.ReactNode;
-  path?: string;
-  subItems?: { name: string; path: string; pro?: boolean; new?: boolean }[];
-};
+  path: string;
+  icon: LucideIcon;
+  badge?: NavBadge;
+}
 
-const navItems: NavItem[] = [
-  {
-    icon: <TbLayoutDashboard size={18} />,
-    name: "Dashboard",
-    path: "/dashboard",
-  },
-  {
-    icon: <HiArrowTrendingUp size={18} />,
-    name: "Investments",
-    path: "/investments",
-  },
-  {
-    icon: <BiHistory size={18} />,
-    name: "Investments Logs",
-    path: "/logs",
-  },
-  {
-    icon: <RiStockFill size={18} />,
-    name: "Shares",
-    path: "/shares",
-  },
-  {
-    icon: <SiStockx size={18} />,
-    name: "Shares Logs",
-    path: "/sharelogs",
-  },
-  {
-    icon: <FaExchangeAlt size={18} />,
-    name: "Transactions",
-    path: "/transactions",
-  },
-  {
-    icon: <HiArrowDownTray size={18} />,
-    name: "Deposit",
-    path: "/deposit",
-  },
-  {
-    icon: <HiArrowUpTray size={17} />,
-    name: "Withdrawal",
-    path: "/withdraw",
-  },
-  {
-    icon: <BsTrophy size={18} />,
-    name: "Ranks",
-    path: "/rank",
-  },
-  {
-    icon: <FiUserPlus size={18} />,
-    name: "Referrals",
-    path: "/referral",
-  },
-  {
-    icon: <HiCog6Tooth size={18} />,
-    name: "Account settings",
-    path: "/profile",
-  },
-];
+interface NavGroup {
+  title: string;
+  items: NavItem[];
+}
 
-const othersItems: NavItem[] = [
+// --- NAVIGATION DATA STRUCTURE ---
+const NAV_GROUPS: NavGroup[] = [
   {
-    icon: <PieChartIcon />,
-    name: "Charts",
-    subItems: [
-      { name: "Line Chart", path: "/line-chart", pro: false },
-      { name: "Bar Chart", path: "/bar-chart", pro: false },
-    ],
+    title: "Overview",
+    items: [
+      { name: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
+      { name: "Account Statement", path: "/transactions", icon: Receipt },
+    ]
   },
   {
-    icon: <BoxCubeIcon />,
-    name: "UI Elements",
-    subItems: [
-      { name: "Alerts", path: "/alerts", pro: false },
-      { name: "Avatar", path: "/avatars", pro: false },
-      { name: "Badge", path: "/badge", pro: false },
-      { name: "Buttons", path: "/buttons", pro: false },
-      { name: "Images", path: "/images", pro: false },
-      { name: "Videos", path: "/videos", pro: false },
-    ],
+    title: "Portfolio & Investments",
+    items: [
+      { name: "Investment Plans", path: "/investments", icon: Target },
+      { name: "My Portfolio", path: "/logs", icon: PieChart },
+      { name: "Market History", path: "/sharelogs", icon: Activity },
+    ]
   },
   {
-    icon: <PlugInIcon />,
-    name: "Authentication",
-    subItems: [
-      { name: "Sign In", path: "/signin", pro: false },
-      { name: "Sign Up", path: "/signup", pro: false },
-    ],
+    title: "Trading & Markets",
+    items: [
+      { name: "Live Markets", path: "/trading-market", icon: LineChart, badge: { text: "LIVE", color: "text-emerald-500 bg-emerald-500/10 border-emerald-500/30", pulse: true } },
+      { name: "Copy Trading", path: "/copy-trading", icon: Users, badge: { text: "PRO", color: "text-purple-500 bg-purple-500/10 border-purple-500/30" } },
+      { name: "AI Trading Bots", path: "/bot-trading", icon: Bot, badge: { text: "AI", color: "text-blue-500 bg-blue-500/10 border-blue-500/30" } },
+       { name: "Shares", path: "/shares", icon: Zap, badge: { text: "TSLA", color: "text-red-500 bg-red-500/10 border-red-500/30" } },
+    ]
   },
+  {
+    title: "Wallet & Funds",
+    items: [
+      { name: "Deposit Funds", path: "/deposit", icon: PlusCircle },
+      { name: "Withdraw Funds", path: "/withdraw", icon: MinusCircle }, 
+    ]
+  }, 
+  {
+    title: "Account Management",
+    items: [
+      { name: "Profile Settings", path: "/profile", icon: User },
+    ]
+  },
+  {
+    title: "Growth & Rewards",
+    items: [
+      { name: "Referral Program", path: "/referral", icon: Network, badge: { text: "5%", color: "text-emerald-500 bg-emerald-500/10 border-emerald-500/30" } },
+    ]
+  },
+  {
+    title: "Support & Help",
+    items: [
+      { name: "Support Center", path: "/support", icon: Headphones },
+    ]
+  }
 ];
 
 const AppSidebar: React.FC = () => {
-  const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
+  const { isExpanded, isMobileOpen, setIsMobileOpen, isHovered, setIsHovered } = useSidebar();
   const pathname = usePathname();
-  const [user, setUser] = useState<string>();
+  const router = useRouter();
+  
+  // --- FINANCIAL STATES ---
+  const [profile, setProfile] = useState<any>(null);
+  const [sharePrice, setSharePrice] = useState(0);
+  const [totalShares, setTotalShares] = useState(0);
 
+  // --- REAL-TIME MASTER SYNC ---
   useEffect(() => {
-    const fetchUser = async () => {
-      const user = await getUser();
+    let isMounted = true;
 
-      if (user.labels?.includes("admin")) {
-        setUser("admin");
-      } else {
-        setUser("user");
-      }
+    // 1. Fetch Live Market Price for Asset Valuation
+    fetchTeslaPrice()
+        .then(price => { if (isMounted) setSharePrice(parseFloat(price)); })
+        .catch(err => console.error("Market Feed Error:", err));
+
+    const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
+        if (!user) return;
+
+        // 2. Profile Sync (Deposit & Profit)
+        const unsubProfile = onSnapshot(doc(db, "profiles", user.uid), (docSnap) => {
+            if (docSnap.exists()) setProfile(docSnap.data());
+        });
+
+        // 3. Stock Logs Sync (Total Shares)
+        const qStocks = query(collection(db, "stockLogs"), where("userId", "==", user.uid));
+        const unsubStocks = onSnapshot(qStocks, (snapshot) => {
+            let sharesCount = 0;
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                if (data.type === 'buy') sharesCount += Number(data.shares || 0);
+                if (data.type === 'sell') sharesCount -= Number(data.shares || 0);
+            });
+            setTotalShares(sharesCount);
+        });
+
+        return () => { unsubProfile(); unsubStocks(); };
+    });
+
+    return () => {
+        isMounted = false;
+        unsubscribeAuth();
     };
-    fetchUser();
   }, []);
 
-  const [openSubmenu, setOpenSubmenu] = useState<{
-    type: "main" | "others";
-    index: number;
-  } | null>(null);
+  // --- MASTER BALANCE CALCULATION ---
+  const currentDeposit = profile?.totalDeposit !== undefined ? Number(profile.totalDeposit) : Number(profile?.balance || 0);
+  const currentProfit = Number(profile?.profit || 0);
+  const totalSharesValue = totalShares * sharePrice;
+  const grossEquity = currentDeposit + currentProfit + totalSharesValue;
 
-  const [subMenuHeight, setSubMenuHeight] = useState<Record<string, number>>({});
-  const subMenuRefs = useRef<Record<string, HTMLDivElement | null>>({});
-
-  const isActive = useCallback((path: string) => path === pathname, [pathname]);
-
-  useEffect(() => {
-    let submenuMatched = false;
-    ["main", "others"].forEach((menuType) => {
-      const items = menuType === "main" ? navItems : othersItems;
-      items.forEach((nav, index) => {
-        if (nav.subItems) {
-          nav.subItems.forEach((subItem) => {
-            if (isActive(subItem.path)) {
-              setOpenSubmenu({
-                type: menuType as "main" | "others",
-                index,
-              });
-              submenuMatched = true;
-            }
-          });
-        }
-      });
-    });
-
-    if (!submenuMatched) {
-      setOpenSubmenu(null);
-    }
-  }, [pathname, isActive]);
-
-  useEffect(() => {
-    if (openSubmenu !== null) {
-      const key = `${openSubmenu.type}-${openSubmenu.index}`;
-      if (subMenuRefs.current[key]) {
-        setSubMenuHeight((prevHeights) => ({
-          ...prevHeights,
-          [key]: subMenuRefs.current[key]?.scrollHeight || 0,
-        }));
-      }
-    }
-  }, [openSubmenu]);
-
-  const handleSubmenuToggle = (index: number, menuType: "main" | "others") => {
-    setOpenSubmenu((prevOpenSubmenu) => {
-      if (
-        prevOpenSubmenu &&
-        prevOpenSubmenu.type === menuType &&
-        prevOpenSubmenu.index === index
-      ) {
-        return null;
-      }
-      return { type: menuType, index };
-    });
+  const handleSignOut = async () => {
+    await signOut(auth);
+    router.push("/login");
   };
 
-  const renderMenuItems = (items: NavItem[], menuType: "main" | "others") => (
-    <ul className="flex flex-col gap-2">
-      {items.map((nav, index) => (
-        <li key={nav.name}>
-          {nav.subItems ? (
-            <button
-              onClick={() => handleSubmenuToggle(index, menuType)}
-              className={`menu-item group cursor-pointer
-                ${openSubmenu?.type === menuType && openSubmenu?.index === index
-                  ? "menu-item-active"
-                  : "menu-item-inactive"
-                }
-                ${!isExpanded && !isHovered ? "lg:justify-center" : "lg:justify-start"}
-              `}
-            >
-              <span
-                className={
-                  openSubmenu?.type === menuType && openSubmenu?.index === index
-                    ? "menu-item-icon-active"
-                    : "menu-item-icon-inactive"
-                }
-              >
-                {nav.icon}
-              </span>
-              {(isExpanded || isHovered || isMobileOpen) && (
-                <span className="menu-item-text">{nav.name}</span>
-              )}
-              {(isExpanded || isHovered || isMobileOpen) && (
-                <ChevronDownIcon
-                  className={`ml-auto h-5 w-5 transition-transform duration-200
-                    ${openSubmenu?.type === menuType &&
-                      openSubmenu?.index === index
-                      ? "rotate-180 text-brand-500"
-                      : "text-gray-500"
-                    }
-                  `}
-                />
-              )}
-            </button>
-          ) : (
-            nav.path && (
-              <Link
-                href={nav.path}
-                className={`menu-item group
-                  ${isActive(nav.path)
-                    ? "menu-item-active"
-                    : "menu-item-inactive"
-                  }
-                `}
-              >
-                <span
-                  className={
-                    isActive(nav.path)
-                      ? "menu-item-icon-active"
-                      : "menu-item-icon-inactive"
-                  }
-                >
-                  {nav.icon}
-                </span>
-                {(isExpanded || isHovered || isMobileOpen) && (
-                  <span className="menu-item-text">{nav.name}</span>
-                )}
-              </Link>
-            )
-          )}
-
-          {nav.subItems && (isExpanded || isHovered || isMobileOpen) && (
-            <div
-              ref={(el) => {
-                subMenuRefs.current[`${menuType}-${index}`] = el;
-              }}
-              className="overflow-hidden transition-all duration-300"
-              style={{
-                height:
-                  openSubmenu?.type === menuType &&
-                    openSubmenu?.index === index
-                    ? `${subMenuHeight[`${menuType}-${index}`]}px`
-                    : "0px",
-              }}
-            >
-              <ul className="mt-2 space-y-1 ml-9">
-                {nav.subItems.map((subItem) => (
-                  <li key={subItem.name}>
-                    <Link
-                      href={subItem.path}
-                      className={`menu-dropdown-item
-                        ${isActive(subItem.path)
-                          ? "menu-dropdown-item-active"
-                          : "menu-dropdown-item-inactive"
-                        }
-                      `}
-                    >
-                      {subItem.name}
-                      <span className="ml-auto flex items-center gap-1">
-                        {subItem.new && (
-                          <span
-                            className={`menu-dropdown-badge ${isActive(subItem.path)
-                              ? "menu-dropdown-badge-active"
-                              : "menu-dropdown-badge-inactive"
-                              }`}
-                          >
-                            new
-                          </span>
-                        )}
-                        {subItem.pro && (
-                          <span
-                            className={`menu-dropdown-badge ${isActive(subItem.path)
-                              ? "menu-dropdown-badge-active"
-                              : "menu-dropdown-badge-inactive"
-                              }`}
-                          >
-                            pro
-                          </span>
-                        )}
-                      </span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </li>
-      ))}
-
-      {user === "admin" && (
-        <li>
-          <Link
-            href="/controlPanel"
-            className={`menu-item group ${isActive("/controlPanel")
-              ? "menu-item-active"
-              : "menu-item-inactive"
-              }`}
-          >
-            <span
-              className={
-                isActive("/controlPanel")
-                  ? "menu-item-icon-active"
-                  : "menu-item-icon-inactive"
-              }
-            >
-              <RiAdminFill size={18} />
-            </span>
-            {(isExpanded || isHovered || isMobileOpen) && (
-              <span className="menu-item-text">Admin Panel</span>
-            )}
-          </Link>
-        </li>
-      )}
-    </ul>
-  );
+  const isActive = (path: string) => pathname === path;
+  const isSidebarOpen = isExpanded || isHovered || isMobileOpen;
 
   return (
-    <aside
-      className={`
-        fixed top-0 left-0 z-50 mt-16 flex h-screen flex-col border-r
-        px-4 lg:mt-0
-        bg-white/95 text-gray-900 border-gray-200 shadow-lg
-        dark:bg-gray-900/95 dark:text-gray-100 dark:border-gray-800
-        backdrop-blur
-        transition-all duration-300 ease-in-out
-        ${isExpanded || isMobileOpen
-          ? "w-[280px]"
-          : isHovered
-            ? "w-[280px]"
-            : "w-[82px]"
-        }
-        ${isMobileOpen ? "translate-x-0" : "-translate-x-full"}
-        lg:translate-x-0
-      `}
-      onMouseEnter={() => !isExpanded && setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
-      {/* Logo */}
-      <div
+    <>
+      {/* Mobile Overlay */}
+      {isMobileOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden" 
+          onClick={() => setIsMobileOpen(false)}
+        />
+      )}
+
+      <aside
         className={`
-          flex items-center pt-7 pb-6
-          ${!isExpanded && !isHovered ? "lg:justify-center" : "justify-start"}
+          fixed top-0 left-0 z-50 flex h-screen flex-col 
+          bg-white dark:bg-[#0D1117] text-slate-900 dark:text-gray-100 
+          border-r border-slate-200 dark:border-white/5 shadow-2xl lg:shadow-none
+          transition-all duration-300 ease-in-out
+          ${isSidebarOpen ? "w-[280px]" : "w-[80px] -translate-x-full lg:translate-x-0"}
+          ${isMobileOpen ? "translate-x-0" : ""}
         `}
+        onMouseEnter={() => !isExpanded && setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
       >
-        <Link href="/">
-          {isExpanded || isHovered || isMobileOpen ? (
-            <div className="flex items-center gap-2 logo">
-              <div className="logo-badge shrink-0">⚡</div>
-              <div className="logo-text">
-                <span className="logo-text-main">Flash Profits</span>
-                <span className="logo-text-sub text-[10px]!">Automated investing</span>
+        
+        {/* --- BRAND LOGO --- */}
+        <div className="h-20 flex items-center justify-center border-b border-slate-200 dark:border-white/5 relative bg-slate-50 dark:bg-white/[0.02]">
+          <Link href="/dashboard" className="flex items-center space-x-3 group">
+            <div className="w-10 h-10 bg-brand-600 flex items-center justify-center shadow-[0_0_15px_rgba(31,149,201,0.3)] transition-transform">
+              <span className="text-white font-black text-xl italic">S</span>
+            </div>
+            {isSidebarOpen && (
+              <div className="flex flex-col">
+                <span className="text-lg font-black text-slate-900 dark:text-white tracking-tighter uppercase leading-none">
+                  SkyInvest<span className="text-brand-500">Org</span>
+                </span>
+                <span className="text-[9px] font-mono text-slate-500 dark:text-gray-500 tracking-[0.3em] uppercase mt-1">Terminal</span>
               </div>
-              {/* <Image
-                className="dark:hidden"
-                src="/images/logo/logo.svg"
-                alt="Flash Profits"
-                width={150}
-                height={40}
-              />
-              <Image
-                className="hidden dark:block"
-                src="/images/logo/logo-dark.svg"
-                alt="Flash Profits"
-                width={150}
-                height={40}
-              /> */}
-            </div>
-          ) : (
-            <div className="logo flex h-10 w-10 items-center justify-center rounded-xl">
-              <div className="logo-badge shrink-0">⚡</div>
-            </div>
-          )}
-        </Link>
-      </div>
-
-      {/* Nav */}
-      <div className="flex flex-1 flex-col overflow-y-auto pb-6 no-scrollbar">
-        <nav className="space-y-6">
-          <div>
-            {(isExpanded || isHovered || isMobileOpen) && (
-              <h2 className="mb-3 px-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-gray-400">
-                Main
-              </h2>
             )}
-            {renderMenuItems(navItems, "main")}
+          </Link>
+        </div>
+
+        {/* --- DYNAMIC USER PROFILE & GROSS EQUITY --- */}
+        {isSidebarOpen && (
+          <div className="p-5 border-b border-slate-200 dark:border-white/5 bg-slate-50/50 dark:bg-white/[0.01]">
+            <div className="flex items-center gap-4">
+              <div className="relative">
+                <div className="w-12 h-12 bg-slate-200 dark:bg-white/10 flex items-center justify-center text-slate-700 dark:text-white font-black text-lg border border-slate-300 dark:border-white/20 shadow-inner">
+                  {profile?.firstName?.charAt(0) || "O"}
+                </div>
+                <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-emerald-500 border-2 border-white dark:border-[#0D1117]"></div>
+              </div>
+              <div className="flex-1 min-w-0">
+                <h2 className="text-sm font-black text-slate-900 dark:text-white truncate uppercase tracking-widest">
+                  {profile?.firstName ? `${profile.firstName} ${profile.lastName}` : "Operator"}
+                </h2>
+                <div className="flex flex-col mt-1">
+                  <div className="flex items-center gap-1.5 text-[11px] font-black text-slate-800 dark:text-slate-200">
+                    <Wallet size={10} className="text-brand-500" />
+                    <span>${grossEquity.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                  </div>
+                  <span className="text-[8px] font-mono text-slate-400 uppercase tracking-widest mt-0.5">Gross Equity</span>
+                </div>
+              </div>
+            </div>
           </div>
+        )}
 
-          {/* If you ever want “Others” back, uncomment this */}
-          {/* <div>
-            {(isExpanded || isHovered || isMobileOpen) && (
-              <h2 className="mb-3 px-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-gray-400">
-                Others
-              </h2>
-            )}
-            {renderMenuItems(othersItems, "others")}
-          </div> */}
-        </nav>
-      </div>
-    </aside>
+        {/* --- NAVIGATION MENU --- */}
+        <div className="flex-1 overflow-y-auto no-scrollbar py-6 space-y-8">
+          {NAV_GROUPS.map((group, groupIdx) => (
+            <div key={groupIdx} className="px-4">
+              {isSidebarOpen && (
+                <h3 className="mb-3 px-3 text-[9px] font-mono font-bold text-slate-400 uppercase tracking-widest">
+                  {group.title}
+                </h3>
+              )}
+              <ul className="space-y-1">
+                {group.items.map((item, itemIdx) => {
+                  const Icon = item.icon;
+                  const active = isActive(item.path);
+
+                  return (
+                    <li key={itemIdx}>
+                      <Link
+                        href={item.path}
+                        className={`
+                          group flex items-center px-3 py-3 transition-all duration-200
+                          ${active 
+                            ? "bg-brand-500/10 border-l-2 border-brand-500 text-brand-600 dark:text-brand-400" 
+                            : "border-l-2 border-transparent text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white"}
+                          ${!isSidebarOpen ? "justify-center" : ""}
+                        `}
+                      >
+                        <Icon size={18} className={`shrink-0 ${active ? "text-brand-500" : "text-slate-400 group-hover:text-slate-600 dark:group-hover:text-white"}`} />
+                        
+                        {isSidebarOpen && (
+                          <span className="ml-3 text-xs font-bold tracking-wide">
+                            {item.name}
+                          </span>
+                        )}
+
+                        {isSidebarOpen && item.badge && (
+                          <span className={`ml-auto flex items-center px-2 py-0.5 text-[9px] font-mono font-bold border ${item.badge.color}`}>
+                            {item.badge.pulse && <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse mr-1.5"></div>}
+                            {item.badge.text}
+                          </span>
+                        )}
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          ))}
+        </div>
+
+        {/* --- FOOTER ACTIONS --- */}
+        <div className="p-4 border-t border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-white/[0.02]">
+          <button
+            onClick={handleSignOut}
+            className={`
+              flex items-center w-full px-3 py-3 text-red-600 dark:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors
+              ${!isSidebarOpen ? "justify-center" : ""}
+            `}
+          >
+            <LogOut size={18} className="shrink-0" />
+            {isSidebarOpen && <span className="ml-3 text-xs font-bold tracking-wide uppercase">Terminate Session</span>}
+          </button>
+        </div>
+
+      </aside>
+    </>
   );
 };
 

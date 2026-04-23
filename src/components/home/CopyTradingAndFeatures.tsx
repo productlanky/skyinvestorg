@@ -1,4 +1,4 @@
-/* eslint-disable @next/next/no-img-element */
+
 import { Zap, ShieldCheck, Cpu, Globe, ArrowRight, BarChart3 } from 'lucide-react';
 import Link from 'next/link';
 

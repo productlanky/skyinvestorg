@@ -151,8 +151,8 @@ export default function QuickTradeForm({ initialAsset }: { initialAsset?: string
             if (!profileSnap.exists()) throw new Error("Profile node missing.");
 
             const pData = profileSnap.data();
-            let currentDeposit = Number(pData.totalDeposit || 0);
-            let currentProfit = Number(pData.profit || 0);
+            const currentDeposit = Number(pData.totalDeposit || 0);
+            const currentProfit = Number(pData.profit || 0);
 
             // LIQUIDITY CHECK
             if (tradeAmount > (currentDeposit + currentProfit)) {

@@ -361,7 +361,7 @@ function ParametersView({ formData, handleChange }: any) {
               <div className="space-y-2">
                 <label className="text-[9px] font-mono font-bold text-slate-500 uppercase tracking-widest">Identity_Scan_Front</label>
                 <a href={formData.kycFront} target="_blank" rel="noopener noreferrer" className="block p-1 border border-slate-200 dark:border-white/10 hover:border-brand-500 transition-colors bg-white dark:bg-black">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                 
                   <img src={formData.kycFront} alt="KYC Front" className="w-full h-48 object-cover opacity-90 hover:opacity-100 transition-opacity" />
                 </a>
               </div>
@@ -370,7 +370,7 @@ function ParametersView({ formData, handleChange }: any) {
               <div className="space-y-2">
                 <label className="text-[9px] font-mono font-bold text-slate-500 uppercase tracking-widest">Identity_Scan_Back</label>
                 <a href={formData.kycBack} target="_blank" rel="noopener noreferrer" className="block p-1 border border-slate-200 dark:border-white/10 hover:border-brand-500 transition-colors bg-white dark:bg-black">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                 
                   <img src={formData.kycBack} alt="KYC Back" className="w-full h-48 object-cover opacity-90 hover:opacity-100 transition-opacity" />
                 </a>
               </div>
@@ -458,7 +458,7 @@ function LiquidityControlView({ userId, userProfile, onProfileUpdate }: { userId
       const profileRef = doc(db, "profiles", userId);
 
       let newDeposit = userProfile.totalDeposit;
-      let newProfit = userProfile.profit;
+      const newProfit = userProfile.profit;
 
       const isDeposit = txData.category === 'deposit' || txData.type === 'deposit' || txData.type === 'capital_injection';
       const isWithdrawal = txData.category === 'withdrawal' || txData.type === 'withdrawal' || txData.type === 'capital_extraction';

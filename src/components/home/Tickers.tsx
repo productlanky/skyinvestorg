@@ -19,7 +19,7 @@ export function TopTicker() {
               scrolling="no" 
               frameBorder="0" 
               /* Lowercase to satisfy React's custom attribute rule without TypeScript yelling */
-              // @ts-ignore
+              // @ts-expect-error
               allowtransparency="true"
               className="w-full grayscale brightness-125 contrast-125"
             />

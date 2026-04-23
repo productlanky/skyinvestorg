@@ -78,7 +78,7 @@ export default function AutomateHero() {
 
               {/* Code Terminal Simulation */}
               <div className="bg-[#020305] border border-white/5 p-4 rounded-sm font-mono text-xs overflow-hidden h-[240px] relative">
-                <div className="text-gray-500 mb-2">// INITIALIZING FIX API PROTOCOL</div>
+                <div className="text-gray-500 mb-2">{"//"} INITIALIZING FIX API PROTOCOL</div>
                 <div className="text-brand-400 mb-1">import <span className="text-white">SkyInvestOrg.Core.Execution;</span></div>
                 <div className="text-brand-400 mb-4">import <span className="text-white">SkyInvestOrg.MarketData;</span></div>
                 

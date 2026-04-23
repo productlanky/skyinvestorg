@@ -91,7 +91,11 @@ export default function AppHeader() {
     const handleKeyDown = (event: KeyboardEvent) => {
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
         event.preventDefault();
-        isCommandOpen ? closeCommand() : openCommand();
+        if (isCommandOpen) {
+          closeCommand();
+        } else {
+          openCommand();
+        }
       }
     };
     document.addEventListener("keydown", handleKeyDown);
@@ -114,10 +118,10 @@ export default function AppHeader() {
     <>
       <header className="sticky top-0 z-40 flex w-full border-b border-slate-200 dark:border-white/5 bg-white dark:bg-[#0D1117] h-20 items-center transition-colors duration-300">
         <div className="flex flex-col items-center justify-between w-full xl:flex-row lg:px-8">
-          
+
           {/* LEFT SIDE: Sidebar Toggle & Search Trigger */}
           <div className="flex items-center justify-between w-full xl:w-fit gap-4 px-4 py-3 lg:px-0 lg:py-0 border-b border-slate-200 dark:border-white/5 xl:border-none">
-            
+
             <button
               onClick={handleToggleSidebar}
               className="flex h-10 w-10 items-center justify-center border border-slate-200 dark:border-white/10 text-slate-500 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
@@ -161,7 +165,7 @@ export default function AppHeader() {
 
           {/* RIGHT SIDE: Quick Actions, Theme, User */}
           <div className="hidden xl:flex w-full items-center justify-end gap-4 px-5 py-3 xl:w-auto xl:px-0 xl:py-0">
-            
+
             {/* Quick Actions Terminal Dropdown */}
             <div className="relative shrink-0">
               <button
@@ -214,7 +218,7 @@ export default function AppHeader() {
       {isCommandOpen && (
         <div className="fixed inset-0 z-[100] flex items-start justify-center bg-black/60 backdrop-blur-sm p-4 pt-24">
           <div className="w-full max-w-2xl bg-white dark:bg-[#0D1117] border border-brand-500/30 shadow-[0_0_50px_rgba(31,149,201,0.15)] flex flex-col relative overflow-hidden">
-            
+
             {/* Terminal Top Bar */}
             <div className="absolute top-0 right-0 p-1.5 bg-brand-500/10 text-[8px] font-mono text-brand-500 border-l border-b border-brand-500/20 tracking-widest">
               CMD_SYS_V2
@@ -247,7 +251,7 @@ export default function AppHeader() {
                 return (
                   <div key={group} className="border border-slate-100 dark:border-white/5 bg-slate-50/50 dark:bg-white/[0.01] p-2">
                     <p className="px-2 py-1.5 text-[9px] font-mono font-bold uppercase tracking-[0.2em] text-slate-400 border-b border-slate-200 dark:border-white/5 mb-2">
-                      // {group}
+                      {'//'} {group}
                     </p>
                     <ul className="space-y-1">
                       {groupItems.map((item) => (

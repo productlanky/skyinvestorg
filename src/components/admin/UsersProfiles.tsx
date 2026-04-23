@@ -68,7 +68,7 @@ export default function UsersTable() {
 
                     
                     // Filter out other administrators from the CRM view if necessary
-                    // if (data.role !== "admin" && data.role !== "super_admin") {
+                    if (data.role !== "admin" && data.role !== "super_admin") {
                         formatted.push({
                             id: doc.id,
                             firstName: data.firstName || "Unknown",
@@ -83,7 +83,7 @@ export default function UsersTable() {
                             profit: Number(data.profit || 0),
                             createdAt: parsedDate,
                         });
-                    // }
+                    }
                 });
 
                 setUsers(formatted);

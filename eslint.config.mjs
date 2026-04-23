@@ -29,6 +29,11 @@ const eslintConfig = [
       
       // Example 5: Disable exhaustive-deps warning in useEffects
       "react-hooks/exhaustive-deps": "off",
+      // 1. Overrides the "Comments inside children section" error
+      "react/jsx-no-comment-textnodes": "off",
+      
+      // 2. Overrides the "@ts-expect-error requires a description" error
+      "@typescript-eslint/ban-ts-comment": "off",
     },
   },
 ];

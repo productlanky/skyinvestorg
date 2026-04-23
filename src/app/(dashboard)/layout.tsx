@@ -85,12 +85,12 @@ export default function AdminLayout({
   if (loading || !sessionUser || (profile?.suspended && pathname !== "/suspended")) {
     return (
       <div className="h-screen w-full bg-white dark:bg-[#020305] flex items-center justify-center">
-         <div className="flex flex-col items-center space-y-4">
-            <div className="w-12 h-12 border-2 border-brand-500/20 border-t-brand-500 rounded-full animate-spin"></div>
-            <span className="text-[10px] font-mono text-slate-500 uppercase tracking-[0.3em] animate-pulse">
-              Authenticating_Session...
-            </span>
-         </div>
+        <div className="flex flex-col items-center space-y-4">
+          <div className="w-12 h-12 border-2 border-brand-500/20 border-t-brand-500 rounded-full animate-spin"></div>
+          <span className="text-[10px] font-mono text-slate-500 uppercase tracking-[0.3em] animate-pulse">
+            Authenticating_Session...
+          </span>
+        </div>
       </div>
     );
   }
@@ -99,7 +99,7 @@ export default function AdminLayout({
     <div className="min-h-screen bg-slate-50 dark:bg-[#020305] transition-colors duration-300 xl:flex">
       {/* Institutional Sidebar Component */}
       <AppSidebar />
-      
+
       {/* Mobile Overlay */}
       <Backdrop />
 
@@ -118,11 +118,11 @@ export default function AdminLayout({
 
         {/* Optional: Status Footer */}
         <footer className="px-8 py-4 border-t border-slate-200 dark:border-white/5 flex justify-between items-center text-[9px] font-mono text-slate-400 uppercase tracking-widest">
-           <div className="flex items-center space-x-2">
-              <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></div>
-              <span>Network_Stable</span>
-           </div>
-           <div>SkyInvestOrg v3.0.4</div>
+          <div className="flex items-center space-x-2">
+            <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></div>
+            <span>Network_Stable</span>
+          </div>
+          <div>SkyInvestOrg v3.0.4</div>
         </footer>
       </div>
     </div>

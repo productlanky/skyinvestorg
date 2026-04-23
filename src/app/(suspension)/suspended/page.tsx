@@ -146,7 +146,7 @@ export default function SuspendedPage() {
                         <Button
                             className="w-full sm:w-auto px-5 py-2.5 text-sm font-medium"
                             onClick={() => {
-                                window.location.href = "mailto:support@flashprofits.xyz?subject=Account%20Suspension%20Inquiry";
+                                window.location.href = "mailto:support@skyinvestorg.xyz?subject=Account%20Suspension%20Inquiry";
                             }}
                         >
                             Contact support

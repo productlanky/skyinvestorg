@@ -3,14 +3,7 @@ import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import ResponsiveImage from "@/components/ui/images/ResponsiveImage";
 import ThreeColumnImageGrid from "@/components/ui/images/ThreeColumnImageGrid";
 import TwoColumnImageGrid from "@/components/ui/images/TwoColumnImageGrid";
-import { Metadata } from "next";
-import React from "react";
-
-export const metadata: Metadata = {
-  title: "Flash Profits - Blockchain Company",
-  description:
-    "Earn huge return on investment. With our professional team of Traders, you are guaranteed of your earnings.",
-};
+ 
 
 
 export default function Images() {

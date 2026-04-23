@@ -1,14 +1,7 @@
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import Badge from "@/components/ui/badge/Badge";
 import { PlusIcon } from "@/icons";
-import { Metadata } from "next";
-import React from "react";
-
-export const metadata: Metadata = {
-  title: "Flash Profits - Blockchain Company",
-  description:
-    "Earn huge return on investment. With our professional team of Traders, you are guaranteed of your earnings.",
-};
+ 
 
 
 export default function BadgePage() {

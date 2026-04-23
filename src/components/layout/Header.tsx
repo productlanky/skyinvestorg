@@ -125,7 +125,7 @@ export default function Header() {
             </div>
             <div className="flex items-center space-x-4">
               <Link href="/login" className="text-xs font-bold text-gray-400 hover:text-white tracking-[0.2em] uppercase flex items-center">
-                <Lock className="w-3 h-3 mr-2 text-brand-500" /> Terminal
+                <Lock className="w-3 h-3 mr-2 text-brand-500" /> Login
               </Link>
               <Link href="/register" className="px-6 py-2.5 bg-brand-600 rounded-full text-xs font-black text-white uppercase tracking-widest hover:bg-brand-500 transition-all">
                 Join Now

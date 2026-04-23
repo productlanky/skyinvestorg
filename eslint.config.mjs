@@ -11,10 +11,24 @@ const compat = new FlatCompat({
 
 const eslintConfig = [
   ...compat.extends("next/core-web-vitals", "next/typescript"),
-    {
+  
+  // Appending a new object here overrides the extended configs above
+  {
     rules: {
-      'react/no-unescaped-entities': 'off',
-      '@next/next/no-page-custom-font': 'off',
+      // Example 1: Disable TypeScript warnings for using 'any'
+      "@typescript-eslint/no-explicit-any": "off",
+      
+      // Example 2: Disable the warning when you use standard <img> instead of Next <Image>
+      "@next/next/no-img-element": "off",
+      
+      // Example 3: Disable unused variable warnings (or change "off" to "warn")
+      "@typescript-eslint/no-unused-vars": "off",
+
+      // Example 4: Disable React unescaped entities warning (like using ' or > directly)
+      "react/no-unescaped-entities": "off",
+      
+      // Example 5: Disable exhaustive-deps warning in useEffects
+      "react-hooks/exhaustive-deps": "off",
     },
   },
 ];

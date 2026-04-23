@@ -41,49 +41,49 @@ const NAV_GROUPS: NavGroup[] = [
     title: "Overview",
     items: [
       { name: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
-      { name: "Account Statement", path: "/transactions", icon: Receipt },
+      { name: "Transaction History", path: "/transactions", icon: Receipt }, // Changed from Account Statement
     ]
   },
   {
-    title: "Portfolio & Investments",
+    title: "My Portfolio", // Simplified title
     items: [
       { name: "Investment Plans", path: "/investments", icon: Target },
-      { name: "My Portfolio", path: "/logs", icon: PieChart },
-      { name: "Market History", path: "/sharelogs", icon: Activity },
+      { name: "My Holdings", path: "/logs", icon: PieChart }, // Changed from My Portfolio to avoid repeating the title
+      { name: "Order History", path: "/sharelogs", icon: Activity }, // Changed from Market History (standard exchange term)
     ]
   },
   {
-    title: "Trading & Markets",
+    title: "Trading", // Simplified title
     items: [
-      { name: "Live Markets", path: "/trading-market", icon: LineChart, badge: { text: "LIVE", color: "text-emerald-500 bg-emerald-500/10 border-emerald-500/30", pulse: true } },
+      { name: "Live Trading", path: "/trading-market", icon: LineChart, badge: { text: "LIVE", color: "text-emerald-500 bg-emerald-500/10 border-emerald-500/30", pulse: true } },
       { name: "Copy Trading", path: "/copy-trading", icon: Users, badge: { text: "PRO", color: "text-purple-500 bg-purple-500/10 border-purple-500/30" } },
-      { name: "AI Trading Bots", path: "/bot-trading", icon: Bot, badge: { text: "AI", color: "text-blue-500 bg-blue-500/10 border-blue-500/30" } },
-       { name: "Shares", path: "/shares", icon: Zap, badge: { text: "TSLA", color: "text-red-500 bg-red-500/10 border-red-500/30" } },
+      { name: "Trading Bots", path: "/bot-trading", icon: Bot, badge: { text: "AI", color: "text-blue-500 bg-blue-500/10 border-blue-500/30" } },
+       { name: "Stock Market", path: "/shares", icon: Zap, badge: { text: "TSLA", color: "text-red-500 bg-red-500/10 border-red-500/30" } }, // Changed from Shares to Stock Market
     ]
   },
   {
-    title: "Wallet & Funds",
+    title: "Wallet", // Simplified title
     items: [
-      { name: "Deposit Funds", path: "/deposit", icon: PlusCircle },
-      { name: "Withdraw Funds", path: "/withdraw", icon: MinusCircle }, 
+      { name: "Deposit", path: "/deposit", icon: PlusCircle }, // Removed repetitive "Funds"
+      { name: "Withdraw", path: "/withdraw", icon: MinusCircle }, // Removed repetitive "Funds"
     ]
   }, 
   {
-    title: "Account Management",
+    title: "Settings", // Simplified title
     items: [
-      { name: "Profile Settings", path: "/profile", icon: User },
+      { name: "Profile & Security", path: "/profile", icon: User }, // Added Security so users know where passwords/KYC live
     ]
   },
   {
-    title: "Growth & Rewards",
+    title: "Rewards", // Simplified title
     items: [
-      { name: "Referral Program", path: "/referral", icon: Network, badge: { text: "5%", color: "text-emerald-500 bg-emerald-500/10 border-emerald-500/30" } },
+      { name: "Refer & Earn", path: "/referral", icon: Network, badge: { text: "5%", color: "text-emerald-500 bg-emerald-500/10 border-emerald-500/30" } }, // Changed from Referral Program
     ]
   },
   {
-    title: "Support & Help",
+    title: "Support", // Simplified title
     items: [
-      { name: "Support Center", path: "/support", icon: Headphones },
+      { name: "Help Center", path: "/support", icon: Headphones }, // Changed from Support Center
     ]
   }
 ];

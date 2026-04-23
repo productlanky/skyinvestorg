@@ -53,7 +53,7 @@ export default function Hero() {
                 <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Link>
               <Link href="/login" className="inline-flex items-center justify-center px-8 py-4 text-lg font-bold text-gray-300 transition-all duration-300 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 hover:text-white backdrop-blur-md">
-                Try Demo Environment
+                Login
               </Link>
             </div>
 

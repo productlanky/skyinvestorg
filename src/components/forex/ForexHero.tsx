@@ -83,7 +83,7 @@ export default function CommandCenterHero() {
               >
                 <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out"></div>
                 <span className="relative z-10 text-sm font-black text-white uppercase tracking-widest flex items-center">
-                  Deploy Capital <ArrowUpRight className="ml-3 w-5 h-5 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                 Register <ArrowUpRight className="ml-3 w-5 h-5 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
                 </span>
               </Link>
               

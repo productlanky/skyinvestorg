@@ -144,7 +144,7 @@ export default function IndicesMarketTable() {
                         href="/login" 
                         className="inline-flex px-6 py-2 bg-purple-500/10 border border-purple-500/30 text-purple-400 hover:bg-purple-500 hover:text-white font-mono text-[10px] font-bold uppercase tracking-widest transition-all"
                       >
-                        Execute
+                        Login
                       </Link>
                     </td>
                   </tr>

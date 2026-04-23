@@ -141,8 +141,8 @@ export default function UserDropdown() {
             {/* Menu Links */}
             <div className="p-2 flex flex-col gap-1">
                 <MenuLink href="/profile" icon={<User size={14}/>} label="User Profile" onClick={() => setIsOpen(false)} />
-                <MenuLink href="/settings" icon={<Settings size={14}/>} label="Security Specs" onClick={() => setIsOpen(false)} />
-                <MenuLink href="/support" icon={<LifeBuoy size={14}/>} label="Terminal Help" onClick={() => setIsOpen(false)} />
+                <MenuLink href="/profile#verification" icon={<Settings size={14}/>} label="KYC Status" onClick={() => setIsOpen(false)} />
+                <MenuLink href="/support" icon={<LifeBuoy size={14}/>} label="Help" onClick={() => setIsOpen(false)} />
                 
                 {isAdmin && (
                     <MenuLink 

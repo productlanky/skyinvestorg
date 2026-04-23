@@ -403,7 +403,7 @@ export default function SignUpForm() {
             </button>
             <div className="mt-8 text-center">
               <p className="text-[10px] font-mono text-slate-500 uppercase tracking-widest">
-                Established Entity? <Link href="/login" className="text-brand-600 dark:text-brand-500 font-bold hover:underline ml-2">Initialize Session</Link>
+                Established Entity? <Link href="/login" className="text-brand-600 dark:text-brand-500 font-bold hover:underline ml-2">Login</Link>
               </p>
             </div>
           </div>

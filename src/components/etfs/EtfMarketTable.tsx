@@ -117,7 +117,7 @@ export default function EtfMarketTable() {
                         href="/login" 
                         className="inline-flex px-6 py-2 bg-brand-500/10 border border-brand-500/30 text-brand-400 hover:bg-brand-500 hover:text-white font-mono text-[10px] font-bold uppercase tracking-widest transition-all"
                       >
-                        Execute
+                        Login
                       </Link>
                     </td>
                   </tr>

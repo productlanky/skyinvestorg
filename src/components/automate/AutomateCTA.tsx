@@ -52,7 +52,7 @@ export default function AutomateCTA() {
                   style={{ clipPath: 'polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px)' }}
                 >
                   <span className="relative z-10 text-sm font-black text-white uppercase tracking-widest flex items-center">
-                    Generate API Keys <ArrowRight className="ml-3 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                    Create Account <ArrowRight className="ml-3 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                   </span>
                 </Link>
                 
@@ -62,7 +62,7 @@ export default function AutomateCTA() {
                   style={{ clipPath: 'polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px)' }}
                 >
                   <span className="text-sm font-bold text-gray-300 group-hover:text-white uppercase tracking-widest transition-colors">
-                    Access Sandbox Environment
+                    Register
                   </span>
                 </Link>
               </div>

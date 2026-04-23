@@ -64,7 +64,7 @@ export default function RegulationHero() {
                 style={{ clipPath: 'polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px)' }}
               >
                 <span className="relative z-10 text-xs font-black uppercase tracking-widest flex items-center">
-                  Open Secured Account <ShieldCheck className="ml-3 w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  Create Account <ShieldCheck className="ml-3 w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </span>
               </Link>
             </div>

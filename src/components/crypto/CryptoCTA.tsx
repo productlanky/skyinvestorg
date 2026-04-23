@@ -15,7 +15,7 @@ export default function CryptoCTA() {
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
             <Link href="/register" className="w-full sm:w-auto px-10 py-5 bg-brand-600 hover:bg-brand-500 text-white font-black uppercase tracking-widest text-xs rounded-full shadow-2xl shadow-brand-500/20 transition-all transform hover:-translate-y-1">
-              Start Trading Cryptocurrencies
+              SCreate Account
             </Link>
             <Link href="/contact" className="w-full sm:w-auto px-10 py-5 bg-white/5 border border-white/10 text-white font-black uppercase tracking-widest text-xs rounded-full hover:bg-white/10 transition-all">
               Request VIP Support

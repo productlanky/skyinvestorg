@@ -88,13 +88,13 @@ export default function Footer() {
               <li>
                 <Link href="/login" className="group flex items-center text-sm font-medium text-gray-400 hover:text-brand-400 transition-colors">
                   <span className="font-mono text-brand-500 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 mr-2 transition-all">{'>'}</span>
-                  Terminal Login
+                  Login
                 </Link>
               </li>
               <li>
                 <Link href="/register" className="group flex items-center text-sm font-medium text-gray-400 hover:text-brand-400 transition-colors">
                   <span className="font-mono text-brand-500 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 mr-2 transition-all">{'>'}</span>
-                  Initialize Account
+                  Create Account
                 </Link>
               </li>
               <li>

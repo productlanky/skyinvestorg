@@ -112,7 +112,7 @@ export default function ForexInfoBlocks() {
 
                 <Link href="/register" className="group flex items-center justify-center w-full py-4 bg-white text-[#05070a] font-black uppercase tracking-widest text-xs transition-all hover:bg-gray-200"
                       style={{ clipPath: 'polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px)' }}>
-                  Initialize Sandbox <Terminal className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  Create Account <Terminal className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </Link>
               </div>
             </div>

@@ -56,7 +56,7 @@ export default function AutomateHero() {
                 style={{ clipPath: 'polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px)' }}
               >
                 <span className="relative z-10 text-xs font-black text-white uppercase tracking-widest flex items-center">
-                  Generate API Keys <Code className="ml-3 w-4 h-4 group-hover:scale-110 transition-transform" />
+                 Register <Code className="ml-3 w-4 h-4 group-hover:scale-110 transition-transform" />
                 </span>
               </Link>
             </div>

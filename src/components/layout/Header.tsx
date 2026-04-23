@@ -217,14 +217,14 @@ export default function Header() {
               className="flex items-center justify-center py-5 bg-white/5 border border-white/10 rounded-2xl text-white font-bold uppercase tracking-widest text-xs"
               onClick={() => setMobileMenuOpen(false)}
             >
-              Terminal
+              Login
             </Link>
             <Link 
               href="/register" 
               className="flex items-center justify-center py-5 bg-brand-600 rounded-2xl text-white font-black uppercase tracking-widest text-xs"
               onClick={() => setMobileMenuOpen(false)}
             >
-              Join Firm
+              Create Account
             </Link>
           </div>
         </div>,

@@ -70,7 +70,7 @@ export default function IndicesCTA() {
                   style={{ clipPath: 'polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px)' }}
                 >
                   <span className="text-sm font-bold text-gray-300 group-hover:text-white uppercase tracking-widest transition-colors">
-                    Access Simulation Sandbox
+                    Register
                   </span>
                 </Link>
               </div>

@@ -53,7 +53,6 @@ export default function AppHeader() {
 
   const commandInputRef = useRef<HTMLInputElement>(null);
 
-  // --- MISSING FUNCTION ADDED HERE ---
   const toggleQuickActions = () => setIsQuickActionsOpen((prev) => !prev);
 
   const filteredItems = COMMAND_ITEMS.filter((item) => {
@@ -117,63 +116,64 @@ export default function AppHeader() {
   return (
     <>
       <header className="sticky top-0 z-40 flex w-full border-b border-slate-200 dark:border-white/5 bg-white dark:bg-[#0D1117] h-20 items-center transition-colors duration-300">
-        <div className="flex flex-col items-center justify-between w-full xl:flex-row lg:px-8">
+        <div className="flex items-center justify-between w-full px-4 lg:px-8">
 
-          {/* LEFT SIDE: Sidebar Toggle & Search Trigger */}
-          <div className="flex items-center justify-between w-full xl:w-fit gap-4 px-4 py-3 lg:px-0 lg:py-0 border-b border-slate-200 dark:border-white/5 xl:border-none">
-
+          {/* LEFT SIDE: Sidebar Toggle, Mobile Logo & Search */}
+          <div className="flex items-center gap-3 lg:gap-4">
+            
+            {/* Sidebar Toggle */}
             <button
               onClick={handleToggleSidebar}
-              className="flex h-10 w-10 items-center justify-center border border-slate-200 dark:border-white/10 text-slate-500 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
+              className="flex h-10 w-10 shrink-0 items-center justify-center border border-slate-200 dark:border-white/10 text-slate-500 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
             >
               {isMobileOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
 
             {/* Mobile Logo */}
-            <Link href="/" className="lg:hidden flex items-center space-x-2">
+            <Link href="/" className="lg:hidden flex items-center space-x-2 shrink-0">
               <div className="w-8 h-8 bg-brand-600 flex items-center justify-center">
                 <span className="text-white font-black text-lg italic">S</span>
               </div>
-              <span className="text-sm font-black text-slate-900 dark:text-white tracking-tighter uppercase">SkyInvest</span>
+              <span className="hidden sm:inline text-sm font-black text-slate-900 dark:text-white tracking-tighter uppercase">SkyInvest</span>
             </Link>
 
             {/* Desktop Search Trigger */}
-            <div className="hidden lg:block flex-1 pl-4">
+            <div className="hidden lg:block">
               <button
                 type="button"
                 onClick={openCommand}
-                className="group relative flex h-11 w-96 items-center border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/[0.02] pl-10 pr-4 text-left hover:border-brand-500/50 transition-colors"
+                className="group relative flex h-10 w-64 xl:w-96 items-center border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/[0.02] pl-10 pr-4 text-left hover:border-brand-500/50 transition-colors"
               >
                 <Search className="absolute left-3 w-4 h-4 text-slate-400 group-hover:text-brand-500 transition-colors" />
-                <span className="text-xs font-mono text-slate-500 uppercase tracking-widest truncate">
+                <span className="text-[10px] xl:text-xs font-mono text-slate-500 uppercase tracking-widest truncate">
                   Search Index or press...
                 </span>
-                <span className="absolute right-3 flex items-center gap-1">
+                <span className="absolute right-3 hidden xl:flex items-center gap-1">
                   <span className="px-1.5 py-0.5 bg-white dark:bg-black/50 border border-slate-200 dark:border-white/10 text-[10px] font-mono text-slate-500 font-bold">⌘K</span>
                 </span>
               </button>
             </div>
-
+            
             {/* Mobile Search Toggle */}
             <button
               onClick={openCommand}
-              className="flex h-10 w-10 items-center justify-center border border-slate-200 dark:border-white/10 text-slate-500 hover:bg-slate-50 dark:hover:bg-white/5 xl:hidden"
+              className="flex h-10 w-10 shrink-0 items-center justify-center border border-slate-200 dark:border-white/10 text-slate-500 hover:bg-slate-50 dark:hover:bg-white/5 lg:hidden"
             >
               <Search className="w-4 h-4" />
             </button>
           </div>
 
-          {/* RIGHT SIDE: Quick Actions, Theme, User */}
-          <div className="hidden xl:flex w-full items-center justify-end gap-4 px-5 py-3 xl:w-auto xl:px-0 xl:py-0">
+          {/* RIGHT SIDE: Quick Actions, Theme, User (Always Visible Now) */}
+          <div className="flex items-center justify-end gap-2 sm:gap-4 ml-auto">
 
-            {/* Quick Actions Terminal Dropdown */}
-            <div className="relative shrink-0">
+            {/* Quick Actions Terminal Dropdown (Hidden on very small mobile) */}
+            <div className="relative shrink-0 hidden sm:block">
               <button
                 type="button"
                 onClick={toggleQuickActions}
-                className="inline-flex h-11 items-center gap-2 border border-brand-500/30 bg-brand-500/5 px-4 text-xs font-bold text-brand-600 dark:text-brand-400 uppercase tracking-widest hover:bg-brand-500/10 transition-colors"
+                className="inline-flex h-10 items-center gap-2 border border-brand-500/30 bg-brand-500/5 px-4 text-[10px] xl:text-xs font-bold text-brand-600 dark:text-brand-400 uppercase tracking-widest hover:bg-brand-500/10 transition-colors"
               >
-                <Zap className="w-4 h-4" /> Operations
+                <Zap className="w-4 h-4" /> <span className="hidden xl:inline">Operations</span>
               </button>
 
               {isQuickActionsOpen && (
@@ -205,12 +205,16 @@ export default function AppHeader() {
               )}
             </div>
 
-            <div className="h-6 w-px bg-slate-200 dark:bg-white/10 mx-2"></div>
+            <div className="h-6 w-px bg-slate-200 dark:bg-white/10 hidden sm:block"></div>
 
-            <ThemeToggleButton />
-            <NotificationDropdown />
-            <UserDropdown />
+            {/* Core Toggles - Always Visible */}
+            <div className="flex items-center gap-1 sm:gap-2">
+              <ThemeToggleButton />
+              <NotificationDropdown />
+              <UserDropdown />
+            </div>
           </div>
+
         </div>
       </header>
 
@@ -232,11 +236,11 @@ export default function AppHeader() {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="EXECUTE COMMAND..."
-                className="flex-1 bg-transparent text-sm font-mono font-bold text-slate-900 dark:text-white uppercase tracking-widest outline-none placeholder:text-slate-400 dark:placeholder:text-slate-600"
+                className="flex-1 w-full bg-transparent text-sm font-mono font-bold text-slate-900 dark:text-white uppercase tracking-widest outline-none placeholder:text-slate-400 dark:placeholder:text-slate-600"
               />
               <button
                 onClick={closeCommand}
-                className="p-2 bg-slate-100 dark:bg-white/5 hover:bg-red-500/10 hover:text-red-500 text-slate-500 transition-colors"
+                className="p-2 ml-2 bg-slate-100 dark:bg-white/5 hover:bg-red-500/10 hover:text-red-500 text-slate-500 transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -261,7 +265,7 @@ export default function AppHeader() {
                             className="flex w-full items-center justify-between p-3 text-left hover:bg-white dark:hover:bg-white/5 hover:border-l-2 hover:border-brand-500 border-l-2 border-transparent transition-all group"
                           >
                             <span className="flex items-center gap-4">
-                              <span className="flex h-8 w-8 items-center justify-center bg-slate-200 dark:bg-black/50 border border-slate-300 dark:border-white/10 text-slate-600 dark:text-slate-400 group-hover:text-brand-500 transition-colors">
+                              <span className="flex h-8 w-8 shrink-0 items-center justify-center bg-slate-200 dark:bg-black/50 border border-slate-300 dark:border-white/10 text-slate-600 dark:text-slate-400 group-hover:text-brand-500 transition-colors">
                                 {item.icon}
                               </span>
                               <span className="flex flex-col">
@@ -269,13 +273,13 @@ export default function AppHeader() {
                                   {item.label}
                                 </span>
                                 {item.description && (
-                                  <span className="text-[10px] font-mono text-slate-500">
+                                  <span className="text-[10px] font-mono text-slate-500 hidden sm:block">
                                     {item.description}
                                   </span>
                                 )}
                               </span>
                             </span>
-                            <span className="text-[9px] font-mono text-brand-500 opacity-0 group-hover:opacity-100 transition-opacity">EXECUTE ↵</span>
+                            <span className="text-[9px] font-mono text-brand-500 opacity-0 group-hover:opacity-100 transition-opacity hidden sm:block">EXECUTE ↵</span>
                           </button>
                         </li>
                       ))}
@@ -294,8 +298,8 @@ export default function AppHeader() {
 
             {/* Footer */}
             <div className="flex items-center justify-between border-t border-slate-200 dark:border-brand-500/20 bg-slate-100 dark:bg-brand-500/5 p-4 text-[9px] font-mono uppercase tracking-widest text-slate-500">
-              <span>Press <strong className="text-slate-900 dark:text-white">ESC</strong> to abort sequence</span>
-              <span className="flex items-center gap-4">
+              <span className="hidden sm:inline">Press <strong className="text-slate-900 dark:text-white">ESC</strong> to abort sequence</span>
+              <span className="flex items-center gap-4 ml-auto">
                 <span className="flex items-center gap-1.5"><Wallet className="w-3 h-3 text-brand-500" /> Capital Flow</span>
                 <span className="flex items-center gap-1.5"><Users className="w-3 h-3 text-brand-500" /> Global Network</span>
               </span>

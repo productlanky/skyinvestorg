@@ -21,6 +21,7 @@ import { fetchTeslaPrice } from "@/lib/appwrite/auth";
 import RecentOrders from "../ecommerce/RecentOrders";
 import CopyLinkInput from "../form/group-input/CopyLinkInput";
 import QuickTradeForm from "./QuickTradeForm";
+import { FaSlash } from "react-icons/fa6";
 
 export default function DashboardPage() {
     const [loading, setLoading] = useState(true);
@@ -259,7 +260,7 @@ export default function DashboardPage() {
                 <MiniStatCard label="Total Profit" value={stats.profit} icon={<TrendingUp size={18} className="text-emerald-500" />} />
                 <MiniStatCard label="Total Deposit" value={stats.deposit} icon={<ArrowDownCircle size={18} className="text-brand-500" />} />
                 <MiniStatCard label="Total Withdrawal" value={stats.withdrawal} icon={<ArrowUpCircle size={18} className="text-indigo-500" />} />
-                <MiniStatCard label="Bonus Yield" value={stats.bonus} icon={<Gift size={18} className="text-amber-500" />} />
+                <MiniStatCard label="Total Shares Value" value={totalSharesValue} icon={<FaSlash size={18} className="text-amber-500" />} />
             </div>
 
             {/* 5. ASSET OVERVIEW CARDS */}

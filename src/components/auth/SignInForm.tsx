@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 
 // --- FIREBASE IMPORTS ---
-import { auth } from "@/lib/firebase/config";
+import { auth, db } from "@/lib/firebase/config"; // Added db here
 import { 
   signInWithEmailAndPassword, 
   onAuthStateChanged, 
@@ -27,6 +27,8 @@ import {
   browserSessionPersistence,
   signOut
 } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore"; // Added Firestore methods
+
 import Input from "../form/input/InputField";
 
 export default function SignInForm() {
@@ -72,28 +74,47 @@ export default function SignInForm() {
     setFocus("email");
   }, [setFocus]);
 
-  // --- STRICT FIREBASE SESSION LISTENER ---
+  // --- DYNAMIC FIREBASE SESSION ROUTER ---
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user && pathname !== "/dashboard" && pathname !== "/controlPanel") {
+      // Only run this routing logic if they are on a public auth page
+      if (user && pathname !== "/dashboard" && pathname !== "/controlPanel" && pathname !== "/suspended") {
         
-        // 1. If offline, do not trust the cache. Do not route.
         if (!navigator.onLine) {
             toast.error("NETWORK_ERR: Cannot verify cached credentials while offline.");
             return;
         }
 
         try {
-            // 2. Force network call to ensure user still exists on server
-            const token = await user.getIdTokenResult(true);
+            await user.getIdTokenResult(true); // Force server validation
             
-            if (token.claims.admin) {
-              router.replace('/controlPanel');
+            // Fetch Profile to determine routing
+            const profileSnap = await getDoc(doc(db, "profiles", user.uid));
+            
+            if (profileSnap.exists()) {
+                const data = profileSnap.data();
+                
+                // Bulletproof Suspension & Role Check
+                const isSuspended = 
+                    data.suspended === true || 
+                    String(data.suspended).toLowerCase() === "true" || 
+                    data.status?.toLowerCase() === "suspended";
+                    
+                const isAdmin = data.role === "admin" || data.role === "super_admin";
+
+                // Route accordingly
+                if (isSuspended) {
+                    router.replace("/suspended");
+                } else if (isAdmin) {
+                    router.replace("/controlPanel");
+                } else {
+                    router.replace("/dashboard");
+                }
             } else {
-              router.replace('/dashboard');
+                // Failsafe if profile is missing
+                router.replace('/dashboard');
             }
         } catch (error) {
-            // 3. If token refresh fails (user deleted, banned, or severe network issue)
             console.error("Session Validation Failed:", error);
             await signOut(auth); // Purge the invalid cache
         }
@@ -121,16 +142,32 @@ export default function SignInForm() {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // 3. Strict Admin Claims Check & Routing
-      // Passing 'true' forces a fetch from the server, guaranteeing they exist right now
-      const idTokenResult = await user.getIdTokenResult(true); 
+      // 3. Fetch Profile for Routing
+      const profileSnap = await getDoc(doc(db, "profiles", user.uid));
       
       toast.success("IDENTITY_VERIFIED: Access Granted.");
 
-      if (idTokenResult.claims.admin) {
-        router.push("/controlPanel");
+      if (profileSnap.exists()) {
+          const profileData = profileSnap.data();
+          
+          const isSuspended = 
+              profileData.suspended === true || 
+              String(profileData.suspended).toLowerCase() === "true" || 
+              profileData.status?.toLowerCase() === "suspended";
+              
+          const isAdmin = profileData.role === "admin" || profileData.role === "super_admin";
+
+          // 4. Route Execution
+          if (isSuspended) {
+              router.push("/suspended");
+          } else if (isAdmin) {
+              router.push("/controlPanel");
+          } else {
+              router.push("/dashboard");
+          }
       } else {
-        router.push("/dashboard");
+          // Failsafe
+          router.push("/dashboard");
       }
 
     } catch (err: any) {

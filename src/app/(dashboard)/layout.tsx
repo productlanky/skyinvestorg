@@ -10,11 +10,12 @@ import React, { useEffect, useState } from "react";
 // --- FIREBASE IMPORTS ---
 import { auth, db } from "@/lib/firebase/config";
 import { onAuthStateChanged, User } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, onSnapshot } from "firebase/firestore";
 
 interface ProfileData {
   uid: string;
-  suspended?: boolean; // Firestore stores this as a boolean
+  suspended?: boolean | string; // Catches if it was saved as a string "true"
+  status?: string; // Catches if you saved it as status: "suspended"
   role?: string;
 }
 
@@ -38,55 +39,76 @@ export default function AdminLayout({
       ? "lg:ml-[280px]"
       : "lg:ml-[80px]";
 
-  // 2. Firebase Session & Profile Handshake
+  // 2. Firebase Session & REAL-TIME Profile Handshake
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+    let unsubscribeProfile: () => void; // Variable to hold the snapshot listener
+
+    const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
       if (!user) {
         setSessionUser(null);
         setProfile(null);
         setLoading(false);
         router.replace("/login");
+
+        // Clean up the profile listener if they log out
+        if (unsubscribeProfile) unsubscribeProfile();
         return;
       }
 
       setSessionUser(user);
 
       try {
-        // Fetch Institutional Profile from Firestore
+        // --- THE MAGIC: onSnapshot for Real-Time Updates ---
         const profileRef = doc(db, "profiles", user.uid);
-        const profileSnap = await getDoc(profileRef);
 
-        if (profileSnap.exists()) {
-          setProfile(profileSnap.data() as ProfileData);
-        } else {
-          setProfile(null);
-        }
+        unsubscribeProfile = onSnapshot(profileRef, (profileSnap) => {
+          if (profileSnap.exists()) {
+            setProfile(profileSnap.data() as ProfileData);
+          } else {
+            setProfile(null);
+          }
+          setLoading(false); // Stop loading once the first snapshot arrives
+        }, (err) => {
+          console.error("Critical Terminal Access Error:", err);
+          setLoading(false);
+        });
+
       } catch (err) {
-        console.error("Critical Terminal Access Error:", err);
-      } finally {
+        console.error("Initialization Error:", err);
         setLoading(false);
       }
     });
 
-    return () => unsubscribe();
+    // Cleanup function when the component unmounts
+    return () => {
+      unsubscribeAuth();
+      if (unsubscribeProfile) unsubscribeProfile();
+    };
   }, [router]);
+
+  // --- BULLETPROOF SUSPENSION CHECK ---
+  // This catches booleans, strings, and status text fields just in case!
+  const isSuspended =
+    profile?.suspended === true ||
+    String(profile?.suspended).toLowerCase() === "true" ||
+    profile?.status?.toLowerCase() === "suspended";
 
   // 3. Security Redirection Logic
   useEffect(() => {
     if (loading) return;
 
-    // Check for suspended status in the Sovereign Terminal
-    if (profile?.suspended && pathname !== "/suspended") {
+    // Check for suspended status using our catch-all variable
+    if (isSuspended && pathname !== "/suspended") {
       router.replace("/suspended");
     }
-  }, [loading, profile, pathname, router]);
+  }, [loading, isSuspended, pathname, router]);
 
   // Prevent UI Flickering during authentication handshake
-  if (loading || !sessionUser || (profile?.suspended && pathname !== "/suspended")) {
+  if (loading || !sessionUser || (isSuspended && pathname !== "/suspended")) {
     return (
       <div className="h-screen w-full bg-white dark:bg-[#020305] flex items-center justify-center">
         <div className="flex flex-col items-center space-y-4">
-          <div className="w-12 h-12 border-2 border-brand-500/20 border-t-brand-500 rounded-full animate-spin"></div>
+          <div className="w-12 h-12 border-4 border-brand-500/20 border-t-brand-500 rounded-full animate-spin"></div>
           <span className="text-[10px] font-mono text-slate-500 uppercase tracking-[0.3em] animate-pulse">
             Authenticating_Session...
           </span>

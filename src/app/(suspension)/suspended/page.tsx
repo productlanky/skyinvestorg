@@ -1,165 +1,198 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Button from "@/components/ui/button/Button";
+import { useRouter } from "next/navigation";
+import { ShieldAlert, Terminal, Lock, ArrowRight } from "lucide-react";
 
 // --- FIREBASE IMPORTS ---
 import { auth, db } from "@/lib/firebase/config";
 import { onAuthStateChanged } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, onSnapshot } from "firebase/firestore";
 
 interface FlashUser {
     name?: string;
     email?: string;
-    reason?: string; // Added to catch Admin suspension reasons
+    reason?: string; 
 }
 
 export default function SuspendedPage() {
+    const router = useRouter();
     const [user, setUser] = useState<FlashUser | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        const unsubscribeAuth = onAuthStateChanged(auth, async (firebaseUser) => {
+        let unsubscribeProfile: () => void;
+
+        const unsubscribeAuth = onAuthStateChanged(auth, (firebaseUser) => {
             if (firebaseUser) {
                 try {
-                    // Fetch the user's profile from Firestore
                     const profileRef = doc(db, "profiles", firebaseUser.uid);
-                    const profileSnap = await getDoc(profileRef);
+                    
+                    unsubscribeProfile = onSnapshot(profileRef, (profileSnap) => {
+                        if (profileSnap.exists()) {
+                            const data = profileSnap.data();
+                            
+                            // --- REAL-TIME REDIRECT CHECK ---
+                            const isSuspended = 
+                                data.suspended === true || 
+                                String(data.suspended).toLowerCase() === "true" || 
+                                data.status?.toLowerCase() === "suspended";
 
-                    let displayName = firebaseUser.displayName || "User";
-                    let suspensionReason = "";
+                            // Instantly boot back to dashboard if unsuspended
+                            if (!isSuspended) {
+                                router.replace("/dashboard");
+                                return; 
+                            }
 
-                    if (profileSnap.exists()) {
-                        const data = profileSnap.data();
-                        // Combine first and last name from the profiles collection
-                        const fullName = `${data.firstName || ""} ${data.lastName || ""}`.trim();
-                        if (fullName) displayName = fullName;
-                        
-                        // Grab the specific reason the admin typed in the CRM
-                        suspensionReason = data.suspensionReason || "";
-                    }
-
-                    setUser({
-                        name: displayName,
-                        email: firebaseUser.email || "",
-                        reason: suspensionReason,
+                            let displayName = firebaseUser.displayName || "Operator";
+                            const fullName = `${data.firstName || ""} ${data.lastName || ""}`.trim();
+                            if (fullName) displayName = fullName;
+                            
+                            setUser({
+                                name: displayName,
+                                email: firebaseUser.email || "",
+                                reason: data.suspensionReason || "",
+                            });
+                        }
+                        setIsLoading(false);
+                    }, (err) => {
+                        console.error("Error syncing suspended profile:", err);
+                        setIsLoading(false);
                     });
+
                 } catch (err) {
-                    console.error("Error syncing suspended profile:", err);
+                    console.error("Initialization error:", err);
+                    setIsLoading(false);
                 }
             } else {
                 setUser(null);
+                setIsLoading(false);
+                router.replace("/login");
             }
-            setIsLoading(false);
         });
 
-        return () => unsubscribeAuth();
-    }, []);
+        return () => {
+            unsubscribeAuth();
+            if (unsubscribeProfile) unsubscribeProfile();
+        };
+    }, [router]);
+
+    if (isLoading) {
+        return (
+            <div className="h-screen w-full bg-slate-50 dark:bg-[#020305] flex items-center justify-center">
+                <div className="flex flex-col items-center space-y-4">
+                    <div className="w-12 h-12 border-4 border-red-500/20 border-t-red-500 rounded-full animate-spin"></div>
+                    <span className="text-[10px] font-mono text-slate-500 uppercase tracking-[0.3em] animate-pulse">
+                        Verifying_Clearance...
+                    </span>
+                </div>
+            </div>
+        );
+    }
 
     return (
-        <div className="relative min-h-[calc(100vh-80px)] px-4 py-10 sm:px-6 lg:px-8">
-            {/* Background accent */}
-            <div className="pointer-events-none absolute inset-0 -z-10 opacity-60">
-                <div className="absolute -top-32 right-0 h-72 w-72 rounded-full bg-primary/15 blur-3xl" />
-                <div className="absolute -bottom-24 left-10 h-64 w-64 rounded-full bg-blue-light-400/10 blur-3xl" />
+        <div className="min-h-screen bg-slate-50 dark:bg-[#020305] flex items-center justify-center p-4 sm:p-8 relative overflow-hidden selection:bg-red-500/30">
+            
+            {/* Terminal Background Accents */}
+            <div className="pointer-events-none absolute inset-0 z-0 opacity-20">
+                <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-red-500/50 to-transparent"></div>
+                <div className="absolute bottom-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-red-500/50 to-transparent"></div>
             </div>
 
-            <div className="mx-auto flex max-w-3xl flex-col items-center justify-center text-center animate-in fade-in duration-500">
-                {/* Main card */}
-                <div className="w-full rounded-3xl border border-border/70 bg-gradient-to-b from-background/95 via-background/98 to-background/100 shadow-[0_18px_25px_rgba(15,23,42,0.16)] px-6 py-8 sm:px-8 sm:py-10">
-                    
-                    {/* Icon */}
-                    <div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-destructive/10">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-destructive text-destructive-foreground text-xl font-bold">
-                            !
+            <div className="w-full max-w-2xl bg-white dark:bg-[#0D1117] border border-red-500/30 shadow-[0_0_50px_rgba(239,68,68,0.1)] relative z-10 animate-in fade-in zoom-in-95 duration-500">
+                
+                {/* Terminal Top Bar */}
+                <div className="absolute top-0 right-0 p-1.5 bg-red-500/10 text-[8px] font-mono text-red-500 border-l border-b border-red-500/20 tracking-widest uppercase">
+                    SYS_LOCK_ACTIVE
+                </div>
+
+                {/* Header Section */}
+                <div className="p-6 sm:p-8 border-b border-slate-200 dark:border-white/5 bg-red-50 dark:bg-red-500/[0.02]">
+                    <div className="flex items-start gap-4">
+                        <div className="w-12 h-12 shrink-0 bg-red-500/10 flex items-center justify-center border border-red-500/20">
+                            <ShieldAlert className="text-red-500 w-6 h-6 animate-pulse" />
                         </div>
-                    </div>
-
-                    {/* Badge */}
-                    <div className="mx-auto mb-4 inline-flex items-center gap-2 rounded-full border border-destructive/30 bg-destructive/5 px-3 py-1 text-[11px] font-medium text-destructive uppercase tracking-widest">
-                        <span className="h-1.5 w-1.5 rounded-full bg-destructive animate-pulse" />
-                        Account status · Suspended
-                    </div>
-
-                    {/* Heading */}
-                    <h1 className="mb-3 text-2xl sm:text-3xl lg:text-4xl font-semibold tracking-tight text-foreground">
-                        Your account is temporarily suspended
-                    </h1>
-
-                    {/* Dynamic Subtext */}
-                    <p className="mx-auto mb-6 max-w-xl text-sm sm:text-[13px] text-muted-foreground leading-relaxed">
-                        Hello <b>{user?.name}</b>. 
-                        {user?.reason ? (
-                            <span> Your account has been suspended by the administration for the following reason: <br/><br/><b className="text-foreground border-l-2 border-destructive pl-2 py-1 block bg-destructive/5">{user.reason}</b><br/></span>
-                        ) : (
-                            <span> Your account has exceeded the minimum thresholds for your account type. </span>
-                        )}
-                        Please contact support to upgrade or clear your account. Trading is now locked.
-                    </p>
-
-                    {/* User chip */}
-                    {!isLoading && user && (user.name || user.email) && (
-                        <div className="mx-auto mb-6 inline-flex items-center gap-3 rounded-full border border-border/60 bg-card/70 px-3.5 py-1.5">
-                            <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-[11px] font-semibold text-primary uppercase">
-                                {user.name
-                                    ? user.name.charAt(0)
-                                    : user.email?.charAt(0) || "U"}
+                        <div>
+                            <div className="inline-flex items-center gap-2 px-2 py-0.5 bg-red-500/10 border border-red-500/20 text-[9px] font-mono font-bold text-red-500 uppercase tracking-widest mb-2">
+                                <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
+                                Clearance Revoked
                             </div>
-                            <div className="flex flex-col items-start">
-                                <span className="text-[11px] font-medium text-foreground">
-                                    {user.name || "User"}
-                                </span>
-                                {user.email && (
-                                    <span className="text-[10px] text-muted-foreground">
-                                        {user.email}
-                                    </span>
-                                )}
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Reasons list (Only show if there is no explicit reason provided) */}
-                    {!user?.reason && (
-                        <div className="mx-auto mb-6 max-w-md space-y-2 text-left text-[12px] text-muted-foreground">
-                            <p className="text-center text-[11px] font-medium uppercase tracking-wide text-muted-foreground/80">
-                                Why this might have happened
+                            <h1 className="text-xl sm:text-2xl font-black uppercase tracking-widest text-slate-900 dark:text-white leading-none">
+                                Access Denied
+                            </h1>
+                            <p className="text-[10px] font-mono text-slate-500 uppercase tracking-widest mt-2">
+                                Operations halted due to administrative suspension.
                             </p>
-                            <ul className="mt-1 space-y-1.5">
-                                <li className="flex gap-2">
-                                    <span className="mt-[3px] h-1.5 w-1.5 shrink-0 rounded-full bg-muted-foreground/60" />
-                                    <span>Unusual login or trading activity detected.</span>
-                                </li>
-                                <li className="flex gap-2">
-                                    <span className="mt-[3px] h-1.5 w-1.5 shrink-0 rounded-full bg-muted-foreground/60" />
-                                    <span>Pending KYC / identity verification review.</span>
-                                </li>
-                                <li className="flex gap-2">
-                                    <span className="mt-[3px] h-1.5 w-1.5 shrink-0 rounded-full bg-muted-foreground/60" />
-                                    <span>Compliance check related to your recent deposits.</span>
-                                </li>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Body Section */}
+                <div className="p-6 sm:p-8 space-y-6">
+                    
+                    {/* Operator Data Node */}
+                    <div className="p-4 border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-white/[0.02] flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <Terminal className="text-brand-500 w-4 h-4" />
+                            <div className="flex flex-col">
+                                <span className="text-[9px] font-mono text-slate-400 uppercase tracking-widest">Operator_ID</span>
+                                <span className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">{user?.name || "UNKNOWN_USER"}</span>
+                            </div>
+                        </div>
+                        <div className="text-right flex flex-col items-end">
+                            <span className="text-[9px] font-mono text-slate-400 uppercase tracking-widest">Network_Link</span>
+                            <span className="text-xs font-mono font-bold text-red-500 uppercase tracking-widest">Severed</span>
+                        </div>
+                    </div>
+
+                    {/* Dynamic Reason Log */}
+                    <div className="space-y-2">
+                        <p className="text-[9px] font-mono font-bold uppercase tracking-[0.2em] text-slate-400 flex items-center gap-2">
+                            {'//'} Suspension_Log
+                        </p>
+                        <div className="p-4 border-l-2 border-red-500 bg-red-50 dark:bg-red-500/5 text-xs sm:text-sm font-mono text-slate-700 dark:text-slate-300 leading-relaxed">
+                            {user?.reason ? (
+                                <span className="text-red-600 dark:text-red-400 font-bold">
+                                    &gt; {user.reason}
+                                </span>
+                            ) : (
+                                <span>
+                                    &gt; Account has exceeded minimum compliance thresholds.<br/>
+                                    &gt; Trading and withdrawal protocols are currently locked pending administrative review.
+                                </span>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Default Reasons (Hidden if specific reason exists) */}
+                    {!user?.reason && (
+                        <div className="space-y-2 pt-4">
+                            <p className="text-[9px] font-mono font-bold uppercase tracking-[0.2em] text-slate-400 flex items-center gap-2">
+                                {'//'} Potential_Flags
+                            </p>
+                            <ul className="space-y-2 font-mono text-[10px] text-slate-500 uppercase tracking-widest">
+                                <li className="flex items-center gap-2"><Lock className="w-3 h-3 text-brand-500" /> Unusual login or trading activity detected.</li>
+                                <li className="flex items-center gap-2"><Lock className="w-3 h-3 text-brand-500" /> Pending identity (KYC) verification review.</li>
+                                <li className="flex items-center gap-2"><Lock className="w-3 h-3 text-brand-500" /> Compliance check on recent ledger deposits.</li>
                             </ul>
                         </div>
                     )}
-
-                    {/* CTA buttons */}
-                    <div className="flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
-                        <Button
-                            className="w-full sm:w-auto px-5 py-2.5 text-sm font-medium"
-                            onClick={() => {
-                                window.location.href = "mailto:support@skyinvestorg.xyz?subject=Account%20Suspension%20Inquiry";
-                            }}
-                        >
-                            Contact support
-                        </Button>
-                    </div>
-
-                    {/* Footer note */}
-                    <p className="mt-6 text-[11px] text-muted-foreground">
-                        If you believe this is a mistake, reach out to our team using the
-                        email linked to your account. We’ll review your case as
-                        soon as possible.
-                    </p>
                 </div>
+
+                {/* Footer Controls */}
+                <div className="p-6 border-t border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-white/[0.02] flex flex-col sm:flex-row gap-4 justify-between items-center">
+                    <span className="text-[9px] font-mono text-slate-400 uppercase tracking-widest text-center sm:text-left">
+                        Initiate support sequence to restore access.
+                    </span>
+                    <button
+                        onClick={() => { window.location.href = "mailto:support@skyinvestorg.xyz?subject=Account%20Suspension%20Inquiry"; }}
+                        className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-red-600 hover:bg-red-500 text-white text-[10px] font-black uppercase tracking-[0.2em] transition-all shadow-[0_0_15px_rgba(239,68,68,0.3)]"
+                        style={{ clipPath: 'polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px)' }}
+                    >
+                        Contact_Support <ArrowRight className="w-3 h-3" />
+                    </button>
+                </div>
+
             </div>
         </div>
     );

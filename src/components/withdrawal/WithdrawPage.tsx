@@ -5,13 +5,13 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { validate as validateBitcoin } from "bitcoin-address-validation";
 import { useRouter } from "next/navigation";
-import { 
-  ShieldAlert, 
-  Activity, 
-  Wallet, 
-  ArrowUpRight, 
-  LineChart, 
-  ShieldCheck
+import {
+    ShieldAlert,
+    Activity,
+    Wallet,
+    ArrowUpRight,
+    LineChart,
+    ShieldCheck
 } from "lucide-react";
 
 // --- COMPONENTS ---
@@ -22,9 +22,9 @@ import { Skeleton } from "../ui/skeleton";
 // --- FIREBASE & UTILS ---
 import { auth, db } from "@/lib/firebase/config";
 import { onAuthStateChanged } from "firebase/auth";
-import { 
-  doc, onSnapshot, collection, query, where, getDocs, 
-  serverTimestamp, writeBatch 
+import {
+    doc, onSnapshot, collection, query, where, getDocs,
+    serverTimestamp, writeBatch
 } from "firebase/firestore";
 import { fetchTeslaPrice } from "@/lib/appwrite/auth";
 
@@ -76,7 +76,7 @@ export default function WithdrawPage() {
                 const d = doc.data();
                 return d.type === 'buy' ? sum + (d.shares || 0) : sum - (d.shares || 0);
             }, 0);
-            
+
             setTotalShares(shares);
             setIsLoading(false);
 
@@ -142,18 +142,24 @@ export default function WithdrawPage() {
             // --- REVERSE SIPHONING PROTOCOL: PROFIT FIRST ---
             let newProfit = currentProfit;
             let newDeposit = currentDeposit;
+            let deductedFromProfit = 0;
+            let deductedFromDeposit = 0;
 
             if (newProfit >= withdrawAmount) {
                 // Profit covers the entire withdrawal
                 newProfit -= withdrawAmount;
+                deductedFromProfit = withdrawAmount; // Track profit deduction
             } else {
                 // Profit exhausted, take remainder from deposit
                 const remainder = withdrawAmount - newProfit;
+                deductedFromProfit = newProfit; // Track all available profit taken
+                deductedFromDeposit = remainder; // Track the rest taken from deposit
+
                 newProfit = 0;
                 newDeposit -= remainder;
             }
 
-            // 1. Log Withdrawal Transaction (Pending status)
+            // 1. Log Withdrawal Transaction
             const txRef = doc(collection(db, "transactions"));
             batch.set(txRef, {
                 userId: profile.uid,
@@ -161,6 +167,8 @@ export default function WithdrawPage() {
                 category: 'withdrawal',
                 method: data.method,
                 amount: withdrawAmount,
+                deductedFromProfit: deductedFromProfit,   // NEW: Save the breakdown
+                deductedFromDeposit: deductedFromDeposit, // NEW: Save the breakdown
                 status: "pending",
                 createdAt: serverTimestamp(),
                 metadata: {
@@ -221,16 +229,16 @@ export default function WithdrawPage() {
                     <div className="space-y-10">
                         {/* Stats Summary Grid */}
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <StatNode label="Liquid_Capital" value={`$${availableLiquidity.toLocaleString(undefined, {minimumFractionDigits: 2})}`} icon={<Wallet size={12}/>} />
-                            <StatNode label="Market_Assets" value={`$${(totalShares * sharePrice).toLocaleString(undefined, {minimumFractionDigits: 2})}`} icon={<LineChart size={12}/>} />
-                            <StatNode label="Verified_Tier_Limit" value={`$${profile?.withdrawalLimit.toLocaleString()}`} icon={<ShieldCheck size={12}/>} />
+                            <StatNode label="Liquid_Capital" value={`$${availableLiquidity.toLocaleString(undefined, { minimumFractionDigits: 2 })}`} icon={<Wallet size={12} />} />
+                            <StatNode label="Market_Assets" value={`$${(totalShares * sharePrice).toLocaleString(undefined, { minimumFractionDigits: 2 })}`} icon={<LineChart size={12} />} />
+                            <StatNode label="Verified_Tier_Limit" value={`$${profile?.withdrawalLimit.toLocaleString()}`} icon={<ShieldCheck size={12} />} />
                         </div>
 
                         <WithdrawAlert
                             kycStatus={profile?.kycStatus || "pending"}
                             withdrawalPasswordSet={!!profile?.withdrawalPassword}
                         />
-                        
+
                         <div className="pt-6 border-t border-slate-100 dark:border-white/5">
                             <h3 className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-[0.3em] mb-6 flex items-center gap-2">
                                 <Activity size={14} className="text-brand-500" /> Dispatch_Parameters

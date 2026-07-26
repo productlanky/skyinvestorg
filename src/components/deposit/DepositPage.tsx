@@ -114,7 +114,7 @@ const DepositPage = () => {
       });
 
       toast.success("TRANSFER_RECEIPT_SYNCED");
-      router.push("/dashboard/transactions"); // Ensuring it routes back to the user's ledger
+      router.push("/transactions"); // Ensuring it routes back to the user's ledger
     } catch (error) {
       console.error("Upload error:", error);
       toast.error("UPL_ERR: Transmission failed.");

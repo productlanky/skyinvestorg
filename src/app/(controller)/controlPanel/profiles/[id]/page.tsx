@@ -417,6 +417,10 @@ type TransactionRecord = {
   status?: string;
   photoUrl?: string;
   createdAt?: any;
+  
+  // --- NEW FIELDS FOR PRECISION REFUNDS ---
+  deductedFromProfit?: number;
+  deductedFromDeposit?: number;
 };
 
 function LiquidityControlView({ userId, userProfile, onProfileUpdate }: { userId: string, userProfile: UserProfile, onProfileUpdate: (d: number, p: number) => void }) {
@@ -450,57 +454,74 @@ function LiquidityControlView({ userId, userProfile, onProfileUpdate }: { userId
     return () => unsub();
   }, [userId]);
 
-  const handleAction = async (txId: string, txData: TransactionRecord, action: "approve" | "reject") => {
-    setExecuting(txId);
-    try {
-      const batch = writeBatch(db);
-      const txRef = doc(db, "transactions", txId);
-      const profileRef = doc(db, "profiles", userId);
+const handleAction = async (txId: string, txData: TransactionRecord, action: "approve" | "reject") => {
+  setExecuting(txId);
+  try {
+    const batch = writeBatch(db);
+    const txRef = doc(db, "transactions", txId);
+    const profileRef = doc(db, "profiles", userId);
 
-      let newDeposit = userProfile.totalDeposit;
-      const newProfit = userProfile.profit;
+    let newDeposit = userProfile.totalDeposit;
+    let newProfit = userProfile.profit; // CHANGED: from const to let
 
-      const isDeposit = txData.category === 'deposit' || txData.type === 'deposit' || txData.type === 'capital_injection';
-      const isWithdrawal = txData.category === 'withdrawal' || txData.type === 'withdrawal' || txData.type === 'capital_extraction';
+    const isDeposit = txData.category === 'deposit' || txData.type === 'deposit' || txData.type === 'capital_injection';
+    const isWithdrawal = txData.category === 'withdrawal' || txData.type === 'withdrawal' || txData.type === 'capital_extraction';
 
-      if (isDeposit) {
-        if (action === "approve") {
-          newDeposit += Number(txData.amount || 0);
-          batch.update(profileRef, { totalDeposit: newDeposit });
-        }
-      } else if (isWithdrawal) {
-        if (action === "reject") {
-          newDeposit += Number(txData.amount || 0);
-          batch.update(profileRef, { totalDeposit: newDeposit });
+    if (isDeposit) {
+      if (action === "approve") {
+        newDeposit += Number(txData.amount || 0);
+        batch.update(profileRef, { totalDeposit: newDeposit });
+      }
+    } else if (isWithdrawal) {
+      if (action === "reject") {
+        
+        // --- NEW: PRECISION REFUND PROTOCOL ---
+        const refundProfit = Number(txData.deductedFromProfit || 0);
+        const refundDeposit = Number(txData.deductedFromDeposit || 0);
+
+        if (refundProfit > 0 || refundDeposit > 0) {
+            // Restore funds accurately based on the transaction breakdown
+            newProfit += refundProfit;
+            newDeposit += refundDeposit;
+            
+            batch.update(profileRef, { 
+                totalDeposit: newDeposit,
+                profit: newProfit 
+            });
+        } else {
+            // FALLBACK: For old transactions created before this update
+            newDeposit += Number(txData.amount || 0);
+            batch.update(profileRef, { totalDeposit: newDeposit });
         }
       }
-
-      batch.update(txRef, {
-        status: action === "approve" ? "approved" : "rejected",
-        resolvedAt: serverTimestamp(),
-        resolvedBy: auth.currentUser?.uid || "admin"
-      });
-
-      batch.set(doc(collection(db, "notifications")), {
-        userId,
-        title: `${isDeposit ? 'DEPOSIT' : 'WITHDRAWAL'} ${action.toUpperCase()}`,
-        message: `Your request for $${txData.amount} has been ${action}d by the network.`,
-        type: action === "approve" ? "success" : "alert",
-        read: false,
-        createdAt: serverTimestamp()
-      });
-
-      await batch.commit();
-      onProfileUpdate(newDeposit, newProfit);
-      toast.success(`TX_${action.toUpperCase()}_SUCCESS`);
-
-    } catch (error) {
-      console.error(error);
-      toast.error("TX_EXECUTION_FAILED");
-    } finally {
-      setExecuting(null);
     }
-  };
+
+    batch.update(txRef, {
+      status: action === "approve" ? "approved" : "rejected",
+      resolvedAt: serverTimestamp(),
+      resolvedBy: auth.currentUser?.uid || "admin"
+    });
+
+    batch.set(doc(collection(db, "notifications")), {
+      userId,
+      title: `${isDeposit ? 'DEPOSIT' : 'WITHDRAWAL'} ${action.toUpperCase()}`,
+      message: `Your request for $${txData.amount} has been ${action}d by the network.`,
+      type: action === "approve" ? "success" : "alert",
+      read: false,
+      createdAt: serverTimestamp()
+    });
+
+    await batch.commit();
+    onProfileUpdate(newDeposit, newProfit); // This now correctly passes the restored profit back to your UI
+    toast.success(`TX_${action.toUpperCase()}_SUCCESS`);
+
+  } catch (error) {
+    console.error(error);
+    toast.error("TX_EXECUTION_FAILED");
+  } finally {
+    setExecuting(null);
+  }
+};
 
   if (loading) return <div className="p-10 text-center text-slate-500 font-mono text-[10px] animate-pulse">Syncing_Ledger...</div>;
 

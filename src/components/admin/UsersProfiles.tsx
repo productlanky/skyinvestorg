@@ -33,71 +33,71 @@ export default function UsersTable() {
     const [search, setSearch] = useState("");
 
     // --- FIREBASE REAL-TIME SYNC ---
-    useEffect(() => {
-        const unsubscribeAuth = onAuthStateChanged(auth, (adminUser) => {
-            if (!adminUser) return;
+// --- FIREBASE REAL-TIME SYNC ---
+useEffect(() => {
+    const unsubscribeAuth = onAuthStateChanged(auth, (adminUser) => {
+        if (!adminUser) return;
 
-            // Fetch all profiles, ordered by newest first
-            const profilesQuery = query(
-                collection(db, "profiles"),
-                orderBy("createdAt", "desc")
-            );
+        const profilesQuery = query(
+            collection(db, "profiles")
+            // Removed orderBy here because we will forcefully sort it correctly on the client
+        );
 
-            const unsubscribeProfiles = onSnapshot(profilesQuery, (snapshot) => {
-                const formatted: UserProfile[] = [];
+        const unsubscribeProfiles = onSnapshot(profilesQuery, (snapshot) => {
+            const formatted: UserProfile[] = [];
+            
+            snapshot.forEach((doc) => {
+                const data = doc.data();
                 
-                snapshot.forEach((doc) => {
-                    const data = doc.data();
-                    
-                    // --- BULLETPROOF DATE PARSING ---
-                    // This prevents the "toDate is not a function" crash
-                    let parsedDate = new Date().toISOString(); // Default fallback
-                    
-                    if (data.createdAt) {
-                        if (typeof data.createdAt.toDate === 'function') {
-                            // 1. Valid Firebase Timestamp Object
-                            parsedDate = data.createdAt.toDate().toISOString();
-                        } else if (typeof data.createdAt === 'string' || typeof data.createdAt === 'number') {
-                            // 2. Legacy Appwrite String or Unix Timestamp
-                            const dateObj = new Date(data.createdAt);
-                            if (!isNaN(dateObj.getTime())) {
-                                parsedDate = dateObj.toISOString();
-                            }
+                // Fallback to epoch time so users with no date go to the BOTTOM, not the top
+                let parsedDate = new Date(0).toISOString(); 
+                
+                if (data.createdAt) {
+                    if (typeof data.createdAt.toDate === 'function') {
+                        parsedDate = data.createdAt.toDate().toISOString();
+                    } else if (typeof data.createdAt === 'string' || typeof data.createdAt === 'number') {
+                        const dateObj = new Date(data.createdAt);
+                        if (!isNaN(dateObj.getTime())) {
+                            parsedDate = dateObj.toISOString();
                         }
                     }
+                }
 
-                    
-                    // Filter out other administrators from the CRM view if necessary
-                    if (data.role !== "admin" && data.role !== "super_admin") {
-                        formatted.push({
-                            id: doc.id,
-                            firstName: data.firstName || "Unknown",
-                            lastName: data.lastName || "Entity",
-                            email: data.email || "—",
-                            phone: data.phone || "—",
-                            country: data.country || "—",
-                            role: data.role || "user",
-                            status: data.status || "active",
-                            kycStatus: data.kycStatus || "pending",
-                            totalDeposit: Number(data.totalDeposit || 0) + Number(data.balance || 0), 
-                            profit: Number(data.profit || 0),
-                            createdAt: parsedDate,
-                        });
-                    }
+                formatted.push({
+                    id: doc.id,
+                    firstName: data.firstName || "Unknown",
+                    lastName: data.lastName || "Entity",
+                    email: data.email || "—",
+                    phone: data.phone || "—",
+                    country: data.country || "—",
+                    role: data.role || "user",
+                    status: data.status || "active",
+                    kycStatus: data.kycStatus || "pending",
+                    totalDeposit: Number(data.totalDeposit || 0) + Number(data.balance || 0), 
+                    profit: Number(data.profit || 0),
+                    createdAt: parsedDate,
                 });
-
-                setUsers(formatted);
-                setLoading(false);
-            }, (error) => {
-                console.error("CRM Sync Error:", error);
-                setLoading(false);
             });
 
-            return () => unsubscribeProfiles();
+            // --- CLIENT-SIDE SORTING ---
+            // This guarantees the newest users are at the top, regardless of 
+            // whether their original data was a String or a Firebase Timestamp
+            formatted.sort((a, b) => {
+                return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+            });
+
+            setUsers(formatted);
+            setLoading(false);
+        }, (error) => {
+            console.error("CRM Sync Error:", error);
+            setLoading(false);
         });
 
-        return () => unsubscribeAuth();
-    }, []);
+        return () => unsubscribeProfiles();
+    });
+
+    return () => unsubscribeAuth();
+}, []);
 
     // --- SEARCH FILTER ---
     const filteredUsers = users.filter((u) => {

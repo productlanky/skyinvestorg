@@ -48,6 +48,12 @@ useEffect(() => {
             
             snapshot.forEach((doc) => {
                 const data = doc.data();
+
+                // --- ADMIN FILTER ---
+                // If the user is an admin or super_admin, skip them and don't add to the list
+                if (data.role === "admin" || data.role === "super_admin") {
+                    return; 
+                }
                 
                 // Fallback to epoch time so users with no date go to the BOTTOM, not the top
                 let parsedDate = new Date(0).toISOString(); 
